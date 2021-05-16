@@ -148,7 +148,7 @@ function tokenise(text) {
         // function name
         var tl = tokens.length;
         var prev = tokens[tl - 1];
-        var prevt = prev.token;
+        var prevt = prev.token || "";
         var pprev = tokens[tl - 2];
         var ppprev = tokens[tl - 3];
         tokens.push({ type: T_LPAREN, token: "(" });
@@ -249,7 +249,7 @@ function tokenise(text) {
     try {
       tokens[tokens.length - 1]?.token[0] != "."
     } catch (error) {
-      console.log(token[tokens.length])
+      console.log(252, tokens[tokens.length-1])
     }
     if (word.match(KeywordRE)) {
       // Keyword
@@ -260,7 +260,7 @@ function tokenise(text) {
     } else if (
         word.match(builtInObject) &&
         tokens[tokens.length - 2]?.token != "function" &&
-        tokens[tokens.length - 1]?.token[0] != "."
+        (tokens[tokens.length - 1]?.token || "")[0] != "."
     ) {
         // builtin objects word 
         //eg: Buffer, Array, String, ...

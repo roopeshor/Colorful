@@ -27,7 +27,7 @@ html {
   top: 0;
   width: 100%;
   height: 100%;
-  padding-left: var(--intent-width);
+  padding-left: calc(var(--intent-width) + 10px);
 }
 #numberRow {
   z-index: 1;
@@ -70,6 +70,7 @@ html {
 .capital{
   color:#3cbef2;
   font-style: italic;
+  font-weight: 700;
 }
 .objprop {
   color:#e9e482;
@@ -79,8 +80,8 @@ html {
 }
 .intent {
   display: inline-block;
-  padding-right: 5px;
-  padding-left: 25px;
+  padding-right: 10px;
+  padding-left: 15px;
   width: var(--intent-width);
   height: 20px;
   text-align: right;
@@ -90,4 +91,7 @@ html {
   display: block;
   width: 100%;
   height: 20px;
+}
+.newline::active {
+    background-color: #111816;
 }
