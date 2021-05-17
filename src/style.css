@@ -1,0 +1,97 @@
+:root {
+  --fontSize: 15px;
+  --intent-width: 8.24575px;
+}
+* {
+  margin: 0;
+  padding: 0;
+  font-family: monospace;
+  font-size: var(--fontSize);
+  line-height: normal;
+  outline: none;
+}
+html {
+  background-color: #212826;
+  color: #cfcfcf;
+}
+
+.container {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+#output, .codeOP {
+  z-index: -1;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  padding-left: calc(var(--intent-width) + 10px);
+}
+#numberRow {
+  z-index: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: var(--intent-width);
+}
+.string {
+  color:#1cca41;
+}
+.keyword {
+  color:#c678dd;
+}
+.comment{
+  color:#777;
+}
+.operator{
+  color:#56b6c2;
+}
+.number{
+  color:#fc9535;
+}
+.function{
+  color:#3cbef2;
+}
+.method{
+  color:#80cc43;
+}
+.argument{
+  color:#f7aa67;
+}
+.regex{
+  color:#f7aa67;
+}
+.object{
+  color:#e28306;
+}
+.capital{
+  color:#3cbef2;
+  font-style: italic;
+  font-weight: 700;
+}
+.objprop {
+  color:#e9e482;
+}
+.nulltype {
+  color: #f84008;
+}
+.intent {
+  display: inline-block;
+  padding-right: 10px;
+  padding-left: 15px;
+  width: var(--intent-width);
+  height: 20px;
+  text-align: right;
+  border-right: 1px solid #fff;
+}
+.newline {
+  display: block;
+  width: 100%;
+  height: 20px;
+}
+.newline::active {
+    background-color: #111816;
+}
