@@ -1,50 +1,46 @@
-var config = {
-  tabIndex: 4,
-  fontSize: 16, // in px
-  enableLineNumbering: true,
-}
-String.prototype.reverse = function () {
+const OUTPUT = document.getElementById("output");
+String.prototype.a = function () {
   return this.split("").reverse().join("");
 };
-String.prototype.replaceSpecHTMLChars = function () {
+String.prototype.b = function () {
   return this.replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 };
 const [
-  T_STRING,
-  T_KEY,
-  T_TEXT,
-  T_OPERATOR,
-  T_NEWLINE,
-  T_COMMENT,
-  T_NUMBER,
-  T_WS,
-  T_FUNCTION,
-  T_ARGUMENT,
-  T_CAPITAL,
-  T_OBJECTPROP,
-  T_METHOD,
-  T_REGEX,
-  T_LPAREN,
-  T_NULLTYPE
+  A,
+  B,
+  C,
+  D,
+  E,
+  F,
+  G,
+  H,
+  I,
+  J,
+  K,
+  L,
+  M,
+  N,
+  O,
+  P 
 ] = [
-  "STRING",
+  "STR",
   "KEY",
-  "TEXT",
-  "OPERATOR",
-  "NEWLINE",
-  "COMMENT",
-  "NUMBER",
+  "TXT",
+  "OPR",
+  "NL",
+  "CMT",
+  "NUM",
   "WS",
-  "FUNCTION",
-  "ARGUMENT",
-  "CAPITAL",
-  "OBJECTPROP",
-  "METHOD",
-  "REGEX",
-  "PAREN",
-  "NULLTYPE"
+  "FN",
+  "AR",
+  "CPT",
+  "OBP",
+  "MT",
+  "RE",
+  "PA",
+  "NT"
 ];
 
 // RegEx
@@ -59,35 +55,44 @@ var stringRE =
   /('(((\\)+(')?)|([^']))*')|("(((\\)+(")?)|([^"]))*")|(`(((\\)+(`)?)|([^`]))*`)/;
 var regexRE =
   /^\/((?![*+?])(?:[^\r\n\[/\\]|\\.|\[(?:[^\r\n\]\\]|\\.)*\])+)\/((?:g(?:im?|mi?)?|i(?:gm?|mg?)?|m(?:gi?|ig?)?)?)/;
-
 var builtInObject =
   /^(AggregateError|Buffer|Array|ArrayBuffer|AsyncFunction|AsyncGenerator|AsyncGeneratorFunction|Atomics|BigInt|BigInt64Array|BigUint64Array|Boolean|DataView|Date|Error|EvalError|Float32Array|Float64Array|Function|Generator|GeneratorFunction|Int16Array|Int32Array|Int8Array|InternalError|Intl|JSON|Map|Math|Number|Object|Promise|Proxy|RangeError|ReferenceError|Reflect|RegExp|Set|SharedArrayBuffer|String|Symbol|SyntaxError|TypeError|URIError|Uint16Array|Uint32Array|Uint8Array|Uint8ClampedArray|WeakMap|WeakSet|WebAssembly)$/;
+const NR = document.getElementById("numberRow");
+const EDITOR = document.getElementById("editor");
 
 //global variables for functionalities
 var lineCount = 1;
+var fontSize = 16; // in px
 var w_h = 0.5498367766955267; // width÷height of a monospace number
-var numberWidth = w_h * config.fontSize;
-// document
-//   .querySelector(":root")
-//   .style.setProperty("" /*this name is to avoid conflict*/, // that property really is --fv-number-row-fontSize
-//   numberWidth + "px");
+var numberWidth = w_h * fontSize;
+document
+  .querySelector(":root")
+  .style.setProperty("--fontSize", fontSize + "px");
 function highlight(container, text) {
   var lineCount = (text.match(/\n/g)?.length || 0) + 1;
-  var tokens = tokenise(text);
+  var d1 = window.performance.now();
+  tokens = tokenise(text);
   var markuped = parse(tokens);
-  var complete = "<pre>";
-  if (config.enableLineNumbering) {
-    var lineNo = new Array(lineCount).fill(1);
-    lineNo.forEach((k, i) => {
-      lineNo[i] = "<span class='intent'>" + (i + 1) + "</span>";
-    });
-    document.querySelector(":root").style.setProperty(
-        "--fv-n-r-fs-a4f",
-        (String(lineCount).length * w_h * config.fontSize) + "px"
+  var dt = window.performance.now() - d1;
+  var lineNo = new Array(lineCount).fill(1);
+  lineNo.forEach((k, i) => {
+    lineNo[i] = "<span class='intent'>" + (i + 1) + "</span>";
+  });
+  NR.innerHTML = lineNo.join("\n");
+  document
+    .querySelector(":root")
+    .style.setProperty(
+      "--intent-width",
+      String(lineCount).length * numberWidth + "px"
     );
-    complete += '<pre id="numberRow">' + lineNo.join("\n") + '</pre>'
-  }
-  container.innerHTML = complete + '<code id="output" tabindex="'+config.tabIndex+'">' + markuped + '</code></pre>';
+  container.innerHTML = markuped;
+  var speed = len / dt; //b/ms
+  console.log(`run time = ${dt} ms
+analysed: ${Math.round(len / 1.024) / 1000}kb input (@ ${
+    Math.round(speed * 1000) / 1000
+  } kb/s)
+found: ${tokens.length} tokens
+`);
   return tokens;
 }
 
@@ -109,35 +114,35 @@ function tokenise(text) {
       // analysin various symbols
 
       if (char == "\n") {
-        tokens.push({type: T_NEWLINE});
+        tokens.push({type: E});
       } else if (next2 == "//" || next2 == "/*") {
         // comment
         var comment = text.substring(i, len).match(commentRE)[0];
         i += comment.length - 1;
-        comment = comment.replaceSpecHTMLChars().split("\n");
+        comment = comment.b().split("\n");
         comment.forEach((line, index) => {
-          tokens.push({ type: T_COMMENT, token: line});
-          if (index < comment.length-1) tokens.push({ type: T_NEWLINE});
+          tokens.push({ type: F, token: line});
+          if (index < comment.length-1) tokens.push({ type: E});
         });
-        // tokens.push({ type: T_COMMENT, token: d});
+        // tokens.push({ type: F, token: d});
       } else if (char.match(/['"`]/)) {
         var str = text.substring(i, len).match(stringRE)[0];
         i += str.length - 1;
-        tokens.push({ type: T_STRING, token: str.replaceSpecHTMLChars() });
+        tokens.push({ type: A, token: str.b() });
       } else if (char.match(operatorRE)[0]) {
         // math operators
         if (char == "/") {
           var re = text.substring(i, len).match(regexRE);
           if (re) {
-            tokens.push({ type: T_REGEX, token: re[0] });
+            tokens.push({ type: N, token: re[0] });
             i += re[0].length;
           }
         }
         var operStr = text.substring(i).match(operatorRE)[0];
         i += operStr.length - 1;
         tokens.push({
-          type: T_OPERATOR,
-          token: operStr.replaceSpecHTMLChars(),
+          type: D,
+          token: operStr.b(),
         });
       } else if (char == "(") {
         // function name
@@ -146,7 +151,7 @@ function tokenise(text) {
         var prevt = prev.token || "";
         var pprev = tokens[tl - 2];
         var ppprev = tokens[tl - 3];
-        tokens.push({ type: T_LPAREN, token: "(" });
+        tokens.push({ type: O, token: "(" });
         const isFunctionClause =
           prevt == "function" ||
           pprev?.token == "function" ||
@@ -160,10 +165,10 @@ function tokenise(text) {
          */
         if (isFunctionClause) {
           // makes name of function colored to method
-          if (prev.type == T_TEXT && prevt.match(nameCharRE)) {
-            prev.type = T_METHOD;
-          } else if (pprev?.type == T_TEXT && pprev.token.match(nameCharRE)) {
-            pprev.type = T_METHOD;
+          if (prev.type == C && prevt.match(nameCharRE)) {
+            prev.type = M;
+          } else if (pprev?.type == C && pprev.token.match(nameCharRE)) {
+            pprev.type = M;
           }
 
           // reads arguments
@@ -174,26 +179,26 @@ function tokenise(text) {
         } else if (
           prevt.match(nameCharRE) &&
           /[a-zA-Z0-9_$\s]+/.test(
-            (prevt.reverse().match(/^(\s)*[a-zA-Z0-9_$\s]+/) || [""])[0]
+            (prevt.a().match(/^(\s)*[a-zA-Z0-9_$\s]+/) || [""])[0]
           )
         ) {
           //this is function calling clause
           if (prev.type.match(/(TEXT|OBJECTPROP)/) && prevt.match(nameCharRE)) {
-            prev.type = T_FUNCTION;
+            prev.type = I;
           } else if (
             pprev?.type.match(/(TEXT|OBJECTPROP)/) &&
             pprev.token.match(nameCharRE)
           ) {
-            pprev.type = T_FUNCTION;
+            pprev.type = I;
           } else if (
             ppprev?.type.match(/(TEXT|OBJECTPROP)/) &&
             ppprev.token.match(nameCharRE)
           ) {
-            ppprev.type = T_FUNCTION;
+            ppprev.type = I;
           }
         }
       } else {
-        tokens.push({ type: T_TEXT, token: char });
+        tokens.push({ type: C, token: char });
       }
       word = "";
     } else if (char.match(nameCharRE)) {
@@ -207,7 +212,7 @@ function tokenise(text) {
   function mergeTextTypes() {
     if (
       tokens.length > 1 &&
-      tokens[tokens.length - 1].type == tokens[tokens.length - 2].type && tokens[tokens.length - 1].type != T_NEWLINE
+      tokens[tokens.length - 1].type == tokens[tokens.length - 2].type && tokens[tokens.length - 1].type != E
     ) {
       tokens[tokens.length - 2].token += tokens[tokens.length - 1].token;
       tokens.pop();
@@ -228,13 +233,13 @@ function tokenise(text) {
           w += ch;
           continue
         } else {
-          argarr.push({type: T_ARGUMENT, token: w});
-          if (ch == "\n") argarr.push({type: T_NEWLINE});
+          argarr.push({type: J, token: w});
+          if (ch == "\n") argarr.push({type: E});
           w = "";
         }
       }
     }
-    if (text[k + index] == ")") argarr.push({ type: T_TEXT, token: ")" }); // adds right paren if it was there
+    if (text[k + index] == ")") argarr.push({ type: C, token: ")" }); // adds right paren if it was there
     return [argarr, index + k];
   }
 
@@ -247,10 +252,10 @@ function tokenise(text) {
     }
     if (word.match(KeywordRE)) {
       // Keyword
-      return { type: T_KEY, token: word };
+      return { type: B, token: word };
     } else if (word.match(number)) {
       // a number
-      return { type: T_NUMBER, token: word };
+      return { type: G, token: word };
     } else if (
         word.match(builtInObject) &&
         tokens[tokens.length - 2]?.token != "function" &&
@@ -258,16 +263,16 @@ function tokenise(text) {
     ) {
         // builtin objects word 
         //eg: Buffer, Array, String, ...
-        return { type: T_CAPITAL, token: word };
+        return { type: K, token: word };
     } else if (
       (tokens[tokens.length - 1]?.token || "").endsWith(".") ||
       (tokens[tokens.length - 2]?.token || "").endsWith(".")
     ) {
-      return { type: T_OBJECTPROP, token: word };
+      return { type: L, token: word };
     } else if (word.match(nullTypes)) {
-      return { type: T_NULLTYPE, token: word };
+      return { type: P, token: word };
     } else {
-      return { type: T_TEXT, token: word };
+      return { type: C, token: word };
     }
   }
 }
@@ -279,31 +284,31 @@ function parse(tokens) {
       tokenType = tkn.type;
     if (tokenType.match(/(WS|TEXT|PAREN)/)) {
       formatted += tkn.token;
-    } else if (tokenType == T_NEWLINE) {
+    } else if (tokenType == E) {
       formatted += "</span><span class='newline'>";
-    } else if (tokenType == T_OBJECTPROP) {
+    } else if (tokenType == L) {
       formatted += "<span class='objprop'>" + tkn.token + "</span>";
-    } else if (tokenType == T_KEY) {
+    } else if (tokenType == B) {
       formatted += "<span class='keyword'>" + tkn.token + "</span>";
-    } else if (tokenType == T_COMMENT) {
+    } else if (tokenType == F) {
       formatted += "<span class='comment'>" + tkn.token + "</span>";
-    } else if (tokenType == T_NUMBER) {
+    } else if (tokenType == G) {
       formatted += "<span class='number'>" + tkn.token + "</span>";
-    } else if (tokenType == T_FUNCTION) {
+    } else if (tokenType == I) {
       formatted += "<span class='function'>" + tkn.token + "</span>";
-    } else if (tokenType == T_ARGUMENT) {
+    } else if (tokenType == J) {
       formatted += "<span class='argument'>" + tkn.token + "</span>";
-    } else if (tokenType == T_CAPITAL) {
+    } else if (tokenType == K) {
       formatted += "<span class='capital'>" + tkn.token + "</span>";
-    } else if (tokenType == T_METHOD) {
+    } else if (tokenType == M) {
       formatted += "<span class='method'>" + tkn.token + "</span>";
-    } else if (tokenType == T_STRING) {
+    } else if (tokenType == A) {
       formatted += "<span class='string'>" + tkn.token + "</span>";
-    } else if (tokenType == T_REGEX) {
+    } else if (tokenType == N) {
       formatted += "<span class='regex'>" + tkn.token + "</span>";
-    } else if (tokenType == T_OPERATOR) {
+    } else if (tokenType == D) {
       formatted += "<span class='operator'>" + tkn.token + "</span>";
-    } else if (tokenType == T_NULLTYPE) {
+    } else if (tokenType == P) {
       formatted += "<span class='nulltype'>" + tkn.token + "</span>";
     }
   }

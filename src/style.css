@@ -1,6 +1,6 @@
 :root {
   --fontSize: 15px;
-  --intent-width: 8.24575px;
+  --fv-n-r-fs-a4f: 0px;
 }
 * {
   margin: 0;
@@ -21,21 +21,18 @@ html {
   width: 100%;
 }
 
-#output, .codeOP {
-  z-index: -1;
+#output {
   position: absolute;
   top: 0;
   width: 100%;
   height: 100%;
-  padding-left: calc(var(--intent-width) + 10px);
 }
 #numberRow {
-  z-index: 1;
   position: absolute;
   top: 0;
   left: 0;
   height: 100%;
-  width: var(--intent-width);
+  width: var(--fv-n-r-fs-a4f);
 }
 .string {
   color:#1cca41;
@@ -82,16 +79,14 @@ html {
   display: inline-block;
   padding-right: 10px;
   padding-left: 15px;
-  width: var(--intent-width);
+  width: var(--fv-n-r-fs-a4f);
   height: 20px;
   text-align: right;
-  border-right: 1px solid #fff;
+  border-right: 1px solid #aaa;
 }
 .newline {
   display: block;
   width: 100%;
   height: 20px;
-}
-.newline::active {
-    background-color: #111816;
+  padding-left: calc(var(--fv-n-r-fs-a4f) + 30px);
 }

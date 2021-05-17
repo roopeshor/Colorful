@@ -50,4 +50,5 @@ code = `function a(_dereq_, module, exports) {
         return ((validLen + placeHoldersLen) * 3 / 4) - placeHoldersLen
     }
 }`
+const OUTPUT = document.getElementsByClassName("container")[0];
 highlight(OUTPUT, code);
