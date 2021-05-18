@@ -2,6 +2,7 @@ var config = {
   tabIndex: 4,
   fontSize: 16, // in px
   enableLineNumbering: true,
+  performanceMonitoring: true
 }
 String.prototype.reverse = function () {
   return this.split("").reverse().join("");
@@ -46,6 +47,7 @@ const [
   "PAREN",
   "NULLTYPE"
 ];
+var emptyToken = {type: "", token:""};
 
 // RegEx
 var KeywordRE =
@@ -59,7 +61,7 @@ var stringRE =
   /('(((\\)+(')?)|([^']))*')|("(((\\)+(")?)|([^"]))*")|(`(((\\)+(`)?)|([^`]))*`)/;
 var regexRE =
   /^\/((?![*+?])(?:[^\r\n\[/\\]|\\.|\[(?:[^\r\n\]\\]|\\.)*\])+)\/((?:g(?:im?|mi?)?|i(?:gm?|mg?)?|m(?:gi?|ig?)?)?)/;
-
+var txt_obj = /(TEXT|OBJECTPROP)/
 var builtInObject =
   /^(AggregateError|Buffer|Array|ArrayBuffer|AsyncFunction|AsyncGenerator|AsyncGeneratorFunction|Atomics|BigInt|BigInt64Array|BigUint64Array|Boolean|DataView|Date|Error|EvalError|Float32Array|Float64Array|Function|Generator|GeneratorFunction|Int16Array|Int32Array|Int8Array|InternalError|Intl|JSON|Map|Math|Number|Object|Promise|Proxy|RangeError|ReferenceError|Reflect|RegExp|Set|SharedArrayBuffer|String|Symbol|SyntaxError|TypeError|URIError|Uint16Array|Uint32Array|Uint8Array|Uint8ClampedArray|WeakMap|WeakSet|WebAssembly)$/;
 
@@ -72,11 +74,13 @@ var numberWidth = w_h * config.fontSize;
 //   .style.setProperty("" /*this name is to avoid conflict*/, // that property really is --fv-number-row-fontSize
 //   numberWidth + "px");
 function highlight(container, text) {
-  var lineCount = (text.match(/\n/g)?.length || 0) + 1;
+  var d1 = window.performance.now();
   var tokens = tokenise(text);
-  var markuped = parse(tokens);
+  var markuped = parseToken(tokens);
+  var compileTime = window.performance.now() - d1;
   var complete = "<pre>";
   if (config.enableLineNumbering) {
+    var lineCount = (text.match(/\n/g)?.length || 0) + 1;
     var lineNo = new Array(lineCount).fill(1);
     lineNo.forEach((k, i) => {
       lineNo[i] = "<span class='intent'>" + (i + 1) + "</span>";
@@ -88,6 +92,14 @@ function highlight(container, text) {
     complete += '<pre id="numberRow">' + lineNo.join("\n") + '</pre>'
   }
   container.innerHTML = complete + '<code id="output" tabindex="'+config.tabIndex+'">' + markuped + '</code></pre>';
+  var totalTime = window.performance.now() - d1;
+  if (config.performanceMonitoring) {
+    console.log(`total code analysed: ${(len/1024).toFixed(3)} kb
+found: ${tokens.length} tokens
+compile time: ${compileTime.toFixed(4)} ms
+compile speed: ${((len/1024/compileTime) * 1000).toFixed(3)} kib/s
+total time: ${totalTime.toFixed(4)} ms`)
+  }
   return tokens;
 }
 
@@ -103,7 +115,7 @@ function tokenise(text) {
       // word analysis
       if (word != "") {
         tokens.push(readWordToken(word));
-        //  mergeTextTypes();
+        //  mergeSameTypes();
       }
       var next2 = text.substring(i, i + 2);
       // analysin various symbols
@@ -142,15 +154,15 @@ function tokenise(text) {
       } else if (char == "(") {
         // function name
         var tl = tokens.length;
-        var prev = tokens[tl - 1];
-        var prevt = prev.token || "";
-        var pprev = tokens[tl - 2];
-        var ppprev = tokens[tl - 3];
+        var prev = tokens[tl - 1] || emptyToken;
+        var prevt = prev.token;
+        var pprev = tokens[tl - 2] || emptyToken;
+        var ppprev = tokens[tl - 3] || emptyToken;
         tokens.push({ type: T_LPAREN, token: "(" });
         const isFunctionClause =
           prevt == "function" ||
-          pprev?.token == "function" ||
-          ppprev?.token == "function";
+          pprev.token == "function" ||
+          ppprev.token == "function";
         /** if following condition is true then it would be function clause
          * cases:
          * 1: function name (args)
@@ -162,7 +174,7 @@ function tokenise(text) {
           // makes name of function colored to method
           if (prev.type == T_TEXT && prevt.match(nameCharRE)) {
             prev.type = T_METHOD;
-          } else if (pprev?.type == T_TEXT && pprev.token.match(nameCharRE)) {
+          } else if (pprev.type == T_TEXT && pprev.token.match(nameCharRE)) {
             pprev.type = T_METHOD;
           }
 
@@ -178,15 +190,15 @@ function tokenise(text) {
           )
         ) {
           //this is function calling clause
-          if (prev.type.match(/(TEXT|OBJECTPROP)/) && prevt.match(nameCharRE)) {
+          if (prev.type.match(txt_obj) && prevt.match(nameCharRE)) {
             prev.type = T_FUNCTION;
           } else if (
-            pprev?.type.match(/(TEXT|OBJECTPROP)/) &&
+            pprev.type.match(txt_obj) &&
             pprev.token.match(nameCharRE)
           ) {
             pprev.type = T_FUNCTION;
           } else if (
-            ppprev?.type.match(/(TEXT|OBJECTPROP)/) &&
+            ppprev.type.match(txt_obj) &&
             ppprev.token.match(nameCharRE)
           ) {
             ppprev.type = T_FUNCTION;
@@ -199,17 +211,22 @@ function tokenise(text) {
     } else if (char.match(nameCharRE)) {
       word += char;
     }
-    mergeTextTypes();
+    mergeSameTypes();
   }
   if (word != "") tokens.push(readWordToken(word));
   return tokens;
 
-  function mergeTextTypes() {
+  /*
+  merges same type of consecutive tokens (except NEWLINE) into
+  single one to minimize tokens to parse
+  */
+  function mergeSameTypes() {
+    var tl = tokens.length;
     if (
-      tokens.length > 1 &&
-      tokens[tokens.length - 1].type == tokens[tokens.length - 2].type && tokens[tokens.length - 1].type != T_NEWLINE
+      tl > 1 &&
+      tokens[tl - 1].type == tokens[tl - 2].type && tokens[tl - 1].type != T_NEWLINE
     ) {
-      tokens[tokens.length - 2].token += tokens[tokens.length - 1].token;
+      tokens[tl - 2].token += tokens[tl - 1].token;
       tokens.pop();
     }
   }
@@ -272,7 +289,7 @@ function tokenise(text) {
   }
 }
 
-function parse(tokens) {
+function parseToken(tokens) {
   var formatted = "<span class='newline'>";
   for (var i = 0; i < tokens.length; i++) {
     var tkn = tokens[i],
