@@ -1,15 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Editor</title>
-  <link rel="stylesheet" href="../src/style.css">
-</head>
-<body>
-  <div class="container"></div>
-  <script src="../src/highlighter.js" defer></script>
-  <script src="./test.js" defer></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Editor</title>
+    <link rel="stylesheet" href="../src/style.css" />
+    <link rel="stylesheet" href="./myStyle.css" />
+    <script src="../src/complete.js" defer></script>
+    <!-- <script src="../src/highlighter.js" defer></script> -->
+  </head>
+  <body>
+    <h1>SynTexer Test</h1>
+    <p>below codes test this library</p>
+    <div class="container">
+      <div class="block">
+        <p>Adding two numners</p>
+        <div class="ex1 js-syntex">var var1 = add(1, 2);
+function add(a, b) {
+  return a + b;
+}
+        </div>
+      </div>
+      <div class="block">
+        <p>Regex test</p>
+        <div class="ex2 js-syntex">var Keyword =
+  /^(arguments|await|break|case|catch|class|const|continue|debugger|default|delete|do|else|enum|eval|export|extends|false|finally|for|function|if|implements|import|in|instanceof|interface|let|native|new|null|package|private|protected|public|return|static|super|switch|this|throw|true|try|typeof|var|void|while|with|yield)$/;
+var operator = /(\=|\+|\-|\*|\/|%|!|<|>|&|\|)*/;
+
+// variable or funciton names
+var nameChar = /[a-zA-Z0-9_\$]/;
+var number = /^((\d*)|(0x[0-9a-f]*)|(0b[01]*))$/;
+var nullTypes = /^(null|NaN|undefined)$/;
+// Test
+"234".match(nameChar)
+        </div>
+        
+      </div>
+      <div class="block">
+        <p>Overall test</p>
+        <div class="ex3 js-syntex">var up_time_now = window.performance.now();
+var reex = /test/;
+var new_str = String("Hello")
+var arr1 = new Array([1,2, null]);
+const num = 234 + 5.676 + 0x34 + 0b10011;
+let f = arr1.length;
+// single line comment
+/*
+multiline
+*/
+
+/* 
+  /*
+    edge case
+  */
+*/
+
+function fun (arg1, arg2, ...args) {return v => {}}
+</div>
+      </div>
+    </div>
+  </body>
 </html>

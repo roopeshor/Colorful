@@ -2,23 +2,22 @@
   --fontSize: 15px;
   --fv-n-r-fs-a4f: 0px;
 }
-* {
-  margin: 0;
-  padding: 0;
+
+.syntex-code{
+  position: relative;
+}
+
+.js-syntex {
+  margin: 5px;
+  padding: 5px;
+  background-color: #212826;
+  color: #cfcfcf;
   font-family: monospace;
   font-size: var(--fontSize);
   line-height: normal;
   outline: none;
-}
-html {
-  background-color: #212826;
-  color: #cfcfcf;
-}
-
-.container {
-  position: relative;
-  height: 100%;
-  width: 100%;
+  white-space: pre;
+  overflow: auto;
 }
 
 #output {
@@ -26,65 +25,65 @@ html {
   top: 0;
   width: 100%;
   height: 100%;
+  outline: none;
 }
+
 #numberRow {
-  position: absolute;
-  top: 0;
-  left: 0;
+  /* top: 0;
+  left: 0; */
   height: 100%;
   width: var(--fv-n-r-fs-a4f);
 }
-.string {
+.js-string {
   color:#1cca41;
 }
-.keyword {
+.js-keyword {
   color:#c678dd;
 }
-.comment{
+.js-comment{
   color:#777;
 }
-.operator{
+.js-operator{
   color:#56b6c2;
 }
-.number{
+.js-number{
   color:#fc9535;
 }
-.function{
+.js-function{
   color:#3cbef2;
 }
-.method{
+.js-method{
   color:#80cc43;
 }
-.argument{
+.js-argument{
   color:#f7aa67;
 }
-.regex{
+.js-regex{
   color:#f7aa67;
 }
-.object{
+.js-object{
   color:#e28306;
 }
-.capital{
+.js-capital{
   color:#3cbef2;
   font-style: italic;
-  font-weight: 700;
 }
-.objprop {
+.js-objprop {
   color:#e9e482;
 }
-.nulltype {
-  color: #f84008;
+.js-nulltype {
+  color: #ee4e1d;
 }
-.intent {
+.js-intent {
   display: inline-block;
   padding-right: 10px;
   padding-left: 15px;
   width: var(--fv-n-r-fs-a4f);
   height: 20px;
   text-align: right;
-  border-right: 1px solid #aaa;
+  border-right: 1px solid #666;
 }
-.newline {
+.js-newline {
   display: block;
   width: 100%;
   height: 20px;

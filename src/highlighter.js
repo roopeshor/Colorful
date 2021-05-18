@@ -67,12 +67,9 @@ var builtInObject =
 
 //global variables for functionalities
 var lineCount = 1;
-var w_h = 0.5498367766955267; // width÷height of a monospace number
+var w_h = 0.5498367766955267; // width/height of a monospace number
 var numberWidth = w_h * config.fontSize;
-// document
-//   .querySelector(":root")
-//   .style.setProperty("" /*this name is to avoid conflict*/, // that property really is --fv-number-row-fontSize
-//   numberWidth + "px");
+
 function highlight(container, text) {
   var d1 = window.performance.now();
   var tokens = tokenise(text);
