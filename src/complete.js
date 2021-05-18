@@ -2,11 +2,10 @@
   // useful stuffs
 
   // RegExes for matching stuffs
+  //regular expressions
   var KeywordRE =
     /^(arguments|await|break|case|catch|class|const|continue|debugger|default|delete|do|else|enum|eval|export|extends|false|finally|for|function|if|implements|import|in|instanceof|interface|let|native|new|package|private|protected|public|return|static|super|switch|this|throw|true|try|typeof|var|void|while|with|yield)$/;
   var operatorRE = /(\=|\+|\-|\*|\/|%|!|<|>|&|\|)*/;
-
-  // variable or funciton names
   var nameCharRE = /[a-zA-Z0-9_\$]/;
   var number = /^((\d*(\.)?\d*)|(0x[0-9a-f]*)|(0b[01]*))$/;
   var nullTypes = /^(null|NaN|undefined)$/;
@@ -14,52 +13,29 @@
   var commentRE = /((\/\*[\s\S]*?\*\/|\/\*[\s\S]*)|(\/\/.*))/;
   var stringRE =
     /('(((\\)+(')?)|([^']))*')|("(((\\)+(")?)|([^"]))*")|(`(((\\)+(`)?)|([^`]))*`)/;
-
-  //regular expressions
   var regexRE =
     /^\/((?![*+?])(?:[^\r\n\[/\\]|\\.|\[(?:[^\r\n\]\\]|\\.)*\])+)\/((?:g(?:im?|mi?)?|i(?:gm?|mg?)?|m(?:gi?|ig?)?)?)/;
   var txt_obj = /(TEXT|OBJECTPROP)/;
-
   // builtIn objects
   var builtInObject =
     /^(AggregateError|Buffer|Array|ArrayBuffer|AsyncFunction|AsyncGenerator|AsyncGeneratorFunction|Atomics|BigInt|BigInt64Array|BigUint64Array|Boolean|DataView|Date|Error|EvalError|Float32Array|Float64Array|Function|Generator|GeneratorFunction|Int16Array|Int32Array|Int8Array|InternalError|Intl|JSON|Map|Math|Number|Object|Promise|Proxy|RangeError|ReferenceError|Reflect|RegExp|Set|SharedArrayBuffer|String|Symbol|SyntaxError|TypeError|URIError|Uint16Array|Uint32Array|Uint8Array|Uint8ClampedArray|WeakMap|WeakSet|WebAssembly)$/;
 
   // types of tokens
-  const [
-    T_STRING,
-    T_KEY,
-    T_TEXT,
-    T_OPERATOR,
-    T_NEWLINE,
-    T_COMMENT,
-    T_NUMBER,
-    T_WS,
-    T_FUNCTION,
-    T_ARGUMENT,
-    T_CAPITAL,
-    T_OBJECTPROP,
-    T_METHOD,
-    T_REGEX,
-    T_LPAREN,
-    T_NULLTYPE,
-  ] = [
-    "STRING",
-    "KEY",
-    "TEXT",
-    "OPERATOR",
-    "NEWLINE",
-    "COMMENT",
-    "NUMBER",
-    "WS",
-    "FUNCTION",
-    "ARGUMENT",
-    "CAPITAL",
-    "OBJECTPROP",
-    "METHOD",
-    "REGEX",
-    "PAREN",
-    "NULLTYPE",
-  ];
+  const T_STRING = "STRING",
+    T_KEY = "KEY",
+    T_TEXT = "TEXT",
+    T_OPERATOR = "OPERATOR",
+    T_NEWLINE = "NEWLINE",
+    T_COMMENT = "COMMENT",
+    T_NUMBER = "NUMBER",
+    T_FUNCTION = "FUNCTION",
+    T_ARGUMENT = "ARGUMENT",
+    T_CAPITAL = "CAPITAL",
+    T_OBJECTPROP = "OBJECTPROP",
+    T_METHOD = "METHOD",
+    T_REGEX = "REGEX",
+    T_LPAREN = "PAREN",
+    T_NULLTYPE = "NULLTYPE";
   // an empty token
   var emptyToken = { type: "", token: "" };
 
@@ -68,6 +44,7 @@
     tabIndex: 4,
     fontSize: 16, // in px
     enableLineNumbering: true,
+    lineHeight: 20,
     performanceMonitoring: true,
   };
 
@@ -97,39 +74,45 @@
   window.onload = function () {
     var codes = document.getElementsByClassName("js-syntex");
     if (codes.length) {
-      for (codeBlock of codes) {
-        highlight(codeBlock);
+      for (var k = 0; k < codes.length; k++) {
+        var block = codes[k];
+        var cfg = {
+          tabIndex: block.getAttribute("tabindex") || config.tabIndex,
+          fontSize: block.getAttribute("fontsize") || config.fontSize,
+          lineHeight: block.getAttribute("lineheight") || config.lineHeight,
+          enableLineNumbering: block.getAttribute("linenumbering") || config.enableLineNumbering,
+          performanceMonitoring: block.getAttribute("moniter") || config.performanceMonitoring
+        }
+        highlight(codes[k], cfg);
       }
     }
   };
 
-  function highlight(container) {
+  function highlight(container, cfg) {
     var w_h = 0.5498367766955267; // width/height of a monospace number
     var text = container.innerText;
     var d1 = window.performance.now();
     var tokens = tokenize(text);
-    var markuped = parseToken(tokens);
+    var markuped = parseToken(tokens, cfg.lineHeight);
     var compileTime = window.performance.now() - d1;
     var complete = "<pre class='syntex-code'>";
-    if (config.enableLineNumbering) {
+    var intentWidth = 0;
+    if (cfg.enableLineNumbering) {
       var lineCount = text.match(/\n/g)?.length || 1;
       var lineNo = new Array(lineCount).fill(1);
+      intentWidth = String(lineCount).length * w_h * cfg.fontSize;
       lineNo.forEach((k, i) => {
-        lineNo[i] = "<span class='js-intent'>" + (i + 1) + "</span>";
+        lineNo[i] = `<span class='js-intent' style='width:${intentWidth}px; height: ${cfg.lineHeight}px'>${i + 1}</span>`;
       });
-      document
-        .querySelector(":root")
-        .style.setProperty(
-          "--fv-n-r-fs-a4f",
-          String(lineCount).length * w_h * config.fontSize + "px"
-        );
       complete += `<pre id="numberRow">${lineNo.join("\n")}</pre>`;
+      intentWidth += 30;
     }
-    container.innerHTML = `${complete}<code id="output" tabindex="${config.tabIndex}">${markuped}</code></pre>`;
+    container.style.fontSize = cfg.fontSize + "px"
+    container.innerHTML = `${complete}<code id="output" style="margin-left: ${intentWidth}px; height: ${cfg.lineHeight}px;" tabindex="${cfg.tabIndex}">${markuped}</code></pre>`;
 
     // performance report
     var totalTime = window.performance.now() - d1;
-    if (config.performanceMonitoring) {
+    if (cfg.performanceMonitoring) {
       console.log(`total code analysed: ${(len / 1024).toFixed(3)} kb
   found: ${tokens.length} tokens
   compile time: ${compileTime.toFixed(4)} ms
@@ -139,7 +122,7 @@
     return tokens;
   }
 
-  window.tokenize = function tokenize(text) {
+  function tokenize(text) {
     len = text.length;
     var tokens = [],
       word = "";
@@ -170,11 +153,15 @@
             tokens.push({ type: T_COMMENT, token: line });
             if (index < comment.length - 1) tokens.push({ type: T_NEWLINE });
           });
-          // tokens.push({ type: T_COMMENT, token: d});
         } else if (char.match(/['"`]/)) {
           var str = text.substring(i, len).match(stringRE)[0];
           i += str.length - 1;
-          tokens.push({ type: T_STRING, token: str.replaceSpecHTMLChars() });
+          str = str.replaceSpecHTMLChars().split("\n");
+          str.forEach((line, index) => {
+            tokens.push({ type: T_STRING, token: line });
+            if (index < str.length - 1) tokens.push({ type: T_NEWLINE });
+          });
+          // tokens.push({ type: T_STRING, token: str.replaceSpecHTMLChars() });
         } else if (char.match(operatorRE)[0]) {
           // math operators
           if (char == "/") {
@@ -219,7 +206,7 @@
 
             // reads arguments
             if (next2 != "()") {
-              [args, i] = readArgumentsToken(i);
+              args = readArgumentsToken(i);
               tokens = tokens.concat(args);
             }
           } else if (
@@ -293,7 +280,8 @@
       }
       if (w != "") argarr.push({ type: T_ARGUMENT, token: w });
       if (text[k + index] == ")") argarr.push({ type: T_TEXT, token: ")" }); // adds right paren if it was there
-      return [argarr, index + k];
+      i = index + k;
+      return argarr;
     }
 
     // finds the type of word given
@@ -327,15 +315,15 @@
     }
   };
 
-  function parseToken(tokens) {
-    var formatted = "<span class='js-newline'>";
+  function parseToken(tokens, lineHeight) {
+    var formatted = `<span class='js-newline' style="height:${lineHeight}px">`;
     for (var i = 0; i < tokens.length; i++) {
       var tkn = tokens[i],
         tokenType = tkn.type;
-      if (tokenType.match(/(WS|TEXT|PAREN)/)) {
+      if (tokenType.match(/(TEXT|PAREN)/)) {
         formatted += tkn.token;
       } else if (tokenType == T_NEWLINE) {
-        formatted += "</span><span class='js-newline'>";
+        formatted += `</span><span class='js-newline' style="height:${lineHeight}px">`;
       } else if (tokenType == T_OBJECTPROP) {
         formatted += "<span class='js-objprop'>" + tkn.token + "</span>";
       } else if (tokenType == T_KEY) {
