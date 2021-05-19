@@ -1,2 +1,2 @@
-# File-Viewer
-file viewer
+# Colourful
+JS Syntax highlighter
