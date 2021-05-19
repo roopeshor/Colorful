@@ -6,7 +6,7 @@
   margin: 5px;
   padding: 5px;
   background-color: #212826;
-  color: #cfcfcf;
+  color: #fff;
   font-family: monospace;
   line-height: normal;
   outline: none;
@@ -39,7 +39,7 @@
   color:#777;
 }
 .js-operator{
-  color:#56b6c2;
+  color:#cbdee0;
 }
 .js-number{
   color:#fc9535;
@@ -66,6 +66,9 @@
 .js-objprop {
   color:#e9e482;
 }
+/* .js-name {
+  color: #9CDCFE;
+} */
 .js-nulltype {
   color: #ee4e1d;
 }
