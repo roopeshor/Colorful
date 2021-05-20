@@ -1,10 +1,10 @@
-(function(){
+(function () {
   // useful stuffs
 
   // RegExes for matching stuffs
   //regular expressions
   var KeywordRE =
-  /^(arguments|await|break|case|catch|class|const|continue|debugger|default|delete|do|else|enum|export|extends|false|finally|for|function|if|implements|import|in|instanceof|interface|let|NaN|native|new|null|package|private|protected|public|return|static|super|switch|this|throw|true|try|typeof|undefined|var|void|while|with|yield)$/;
+    /^(await|break|case|catch|class|const|continue|debugger|default|delete|do|else|enum|export|extends|false|finally|for|function|if|implements|import|in|instanceof|interface|let|NaN|native|new|null|package|private|protected|public|return|static|super|switch|this|throw|true|try|typeof|undefined|var|void|while|with|yield)$/;
   var operatorRE = /(\=|\+|\-|\*|\/|%|!|<|>|\&|\||\:|\?)*/;
   var nameCharRE = /[\wα-ζΑ-Ζ\$]/;
   var number = /^-?((\d*(\.\d*)?)|(0x[0-9a-f]*)|(0b[01]*))$/;
@@ -20,21 +20,21 @@
     /^(AggregateError|Buffer|Array|ArrayBuffer|AsyncFunction|AsyncGenerator|AsyncGeneratorFunction|Atomics|BigInt|BigInt64Array|BigUint64Array|Boolean|DataView|Date|Error|EvalError|Float32Array|Float64Array|Function|Generator|GeneratorFunction|Int16Array|Int32Array|Int8Array|InternalError|Intl|JSON|Map|Math|Number|Object|Promise|Proxy|RangeError|ReferenceError|Reflect|RegExp|Set|SharedArrayBuffer|String|Symbol|SyntaxError|TypeError|URIError|Uint16Array|Uint32Array|Uint8Array|Uint8ClampedArray|WeakMap|WeakSet|WebAssembly)$/;
 
   // types of tokens
-  const T_STRING     = "STRING",
-        T_KEY        = "KEY",
-        T_TEXT       = "TEXT",
-        T_OPERATOR   = "OPERATOR",
-        T_NEWLINE    = "NEWLINE",
-        T_COMMENT    = "COMMENT",
-        T_NUMBER     = "NUMBER",
-        T_FUNCTION   = "FUNCTION",
-        T_ARGUMENT   = "ARGUMENT",
-        T_CAPITAL    = "CAPITAL",
-        T_OBJECTPROP = "OBJECTPROP",
-        T_METHOD     = "METHOD",
-        T_REGEX      = "REGEX",
-        T_LPAREN     = "LPAREN",
-        T_OTHER      = "OTHER";
+  const T_STRING = "STRING",
+    T_KEY = "KEY",
+    T_TEXT = "TEXT",
+    T_OPERATOR = "OPERATOR",
+    T_NEWLINE = "NEWLINE",
+    T_COMMENT = "COMMENT",
+    T_NUMBER = "NUMBER",
+    T_FUNCTION = "FUNCTION",
+    T_ARGUMENT = "ARGUMENT",
+    T_CAPITAL = "CAPITAL",
+    T_OBJECTPROP = "OBJECTPROP",
+    T_METHOD = "METHOD",
+    T_REGEX = "REGEX",
+    T_LPAREN = "LPAREN",
+    T_OTHER = "OTHER";
   // an empty token
   var emptyToken = { type: "", token: "" };
 
@@ -43,7 +43,7 @@
     tabIndex: 4,
     fontSize: 16, // in px
     enableLineNumbering: true,
-    lineHeight: 20
+    lineHeight: 20,
   };
 
   // useful string patterns
@@ -78,8 +78,9 @@
           tabIndex: block.getAttribute("tabindex") || config.tabIndex,
           fontSize: block.getAttribute("fontsize") || config.fontSize,
           lineHeight: block.getAttribute("lineheight") || config.lineHeight,
-          enableLineNumbering: block.getAttribute("linenumbering") || config.enableLineNumbering
-        }
+          enableLineNumbering:
+            block.getAttribute("linenumbering") || config.enableLineNumbering,
+        };
         highlight(codes[k], cfg);
       }
     }
@@ -88,28 +89,50 @@
   function highlight(container, cfg) {
     var w_h = 0.5498367766955267; // width/height of a monospace number
     var text = container.innerText;
-    var tokens = tokenize(text);
-    var markuped = parseToken(tokens, cfg.lineHeight);
+
+    var d1 = window.performance.now();
+    var out = tokenize(text);
+    var markuped = parseToken(out.tokens, cfg.lineHeight);
+    var compileTime = window.performance.now() - d1;
     var complete = "<pre class='syntex-code'>";
     var intentWidth = 0;
     if (cfg.enableLineNumbering) {
-      var lineCount = text.match(/\n/g)?.length+1 || 1;
+      var lineCount = text.match(/\n/g)?.length + 1 || 1;
       var lineNo = new Array(lineCount).fill(1);
       intentWidth = String(lineCount).length * w_h * cfg.fontSize;
       lineNo.forEach((k, i) => {
-        lineNo[i] = `<span class='js-intent' style='width:${intentWidth}px; height: ${cfg.lineHeight}px'>${i + 1}</span>`;
+        lineNo[
+          i
+        ] = `<span class='js-intent' style='width:${intentWidth}px; height: ${
+          cfg.lineHeight
+        }px'>${i + 1}</span>`;
       });
       complete += `<pre id="numberRow">${lineNo.join("\n")}</pre>`;
       intentWidth += 30;
     }
-    container.style.fontSize = cfg.fontSize + "px"
+    container.style.fontSize = cfg.fontSize + "px";
     container.innerHTML = `${complete}<code id="output" style="margin-left: ${intentWidth}px; height: ${cfg.lineHeight}px;" tabindex="${cfg.tabIndex}">${markuped}</code></pre>`;
+    var speed = ((text.length / 1024 / compileTime) * 1000).toFixed(3); //kb/s
+    console.log(`total code analysed: ${(text.length / 1024).toFixed(3)} kb
+found: ${out.tokens.length} tokens
+compile time: ${compileTime.toFixed(4)} ms
+compile speed: ${speed} kib/s`);
   }
 
-  function tokenize(text) {
-    len = text.length;
+  
+  /**
+   * tokenize input text
+   *
+   * @param {string} text
+   * @param {Object} [ErrHandler={}]
+   * @return {Array} tokens
+   */
+  function tokenize(text, ErrHandler = {}) {
+    var len = text.length;
     var tokens = [],
-      word = "";
+      word = "",
+      scopeTree = [],
+      scope = "empty";
     var i = 0;
     while (i < len) {
       word = text.substring(i).match(/^[\wα-ζΑ-Ζ$]+/);
@@ -130,14 +153,13 @@
       after matching a word there will be a non alphanumeric(and non '$') code
       there will be something else the following code analyses that
       */
-      var char = text[i] // next character
+      var char = text[i]; // next character
       var next2 = text.substring(i, i + 2); // next two characters
-      
+
       if (char == " " || char == "\t") {
         // next character is a space/tab
-        var space = text.substring(i).match(/[\t ]+/)[0]
-        tokens.push({ type: T_TEXT, token: space});
-        i += space.length;
+        var space = text.substring(i).match(/[\t ]+/)[0];
+        addTextType(space)
       } else if (char == "\n") {
         // next character is a line break
         tokens.push({ type: T_NEWLINE });
@@ -153,15 +175,34 @@
           tokens.push({ type: T_COMMENT, token: line });
           if (index < comment.length - 1) tokens.push({ type: T_NEWLINE });
         });
-      } else if (char== "'" || char == '"' || char == '`') {
+      } else if (char == "'" || char == '"' || char == "`") {
         // string ahead
         var str = text.substring(i, len).match(stringRE)[0];
-        i += str.length;
-        str = str.replaceSpecHTMLChars().split("\n");
-        str.forEach((line, index) => {
-          tokens.push({ type: T_STRING, token: line });
-          if (index < str.length - 1) tokens.push({ type: T_NEWLINE });
-        });
+        var slen = str.length, c = 0;
+        debugger
+        while (c < slen) {
+          var $i = str.indexOf("${");
+          if ($i > -1) {
+            tokens.push({type: T_OPERATOR, token: "${"});
+            var newStr = str.substring(0, $1);
+            readStr(newStr);
+            var out = tokenize(str.substring($1+2), {braceUnMatch: "break"});
+            c += out.inputEnd;
+            tokens.concat(out.tokens)
+            tokens.push({type: T_OPERATOR, token: "}"});
+          } else {
+            c += str.length;
+            readStr(str);
+          }
+        }
+        function readStr(s){
+          i += s.length;
+          s = s.replaceSpecHTMLChars().split("\n");
+          s.forEach((line, index) => {
+            tokens.push({ type: T_STRING, token: line });
+            if (index < s.length - 1) tokens.push({ type: T_NEWLINE });
+          });
+        }
       } else if (char.match(operatorRE)[0]) {
         // math operators
         if (char == "/") {
@@ -192,7 +233,7 @@
         const isFunctionClause =
           prevt == "function" ||
           pprev.token == "function" ||
-          ppprev.token == "function";
+          ppprev.token == "function" || scopeTree[scopeTree.length-1] == "class";
         if (isFunctionClause) {
           // function defnition ahead
           // makes name of function colored to method
@@ -204,7 +245,7 @@
 
           // reads arguments
           if (next2 != "()") {
-            args = readArgumentsToken(i-1);
+            args = readArgumentsToken(i - 1);
             tokens = tokens.concat(args);
           }
         } else if (
@@ -228,13 +269,29 @@
             ppprev.type = T_FUNCTION;
           }
         }
+      } else if (char == "{") {
+        // debugger;
+        scopeTree.push(scope);
+        scope = "empty";
+        addTextType(char);
+      } else if (char == "}") {
+        addTextType(char);
+        if (scope.length > 0) {
+          scopeTree.pop();
+        } else if (ErrHandler.braceUnMatch == "break") {
+          break;
+        }
       } else {
-        tokens.push({ type: T_TEXT, token: char });
-        i++;
+        addTextType(char);
       }
       mergeSameTypes();
     }
-    return tokens;
+    return {tokens: tokens, inputEnd: i};
+
+    function addTextType(ch) {
+      tokens.push({ type: T_TEXT, token: ch });
+      i+=ch.length;
+    }
 
     /*
     merges same type of consecutive tokens (except NEWLINE) into
@@ -252,6 +309,7 @@
       }
     }
 
+    // read arguments
     function readArgumentsToken(k) {
       // reads and finds arguments of a function being defined
       var args = text.substring(k + 1).match(/[^)]*/)[0];
@@ -278,7 +336,7 @@
         argarr.push({ type: T_OTHER, token: ")" }); // adds right paren if it was there
         index++;
       }
-      i += index
+      i += index;
       return argarr;
     }
 
@@ -286,6 +344,9 @@
     function readWordToken(word) {
       if (word.match(KeywordRE)) {
         // Keyword
+        if (word.match(/(function|if|do|while|for|class|catch|else|finally|switch|try)/)) {
+          scope = word;
+        }
         return { type: T_KEY, token: word };
       } else if (word.match(specials)) {
         // special objects
@@ -305,6 +366,10 @@
       ) {
         // object property
         return { type: T_OBJECTPROP, token: word };
+      } else if (word == "arguments" && scopeTree[scopeTree.length - 1] == "function") {
+        return { type: T_KEY, token: word };
+      } else if ((word == "get" || word == "set") && scopeTree[scopeTree.length - 1] == "class") {
+        return { type: T_KEY, token: word };
       } else {
         return { type: T_TEXT, token: word };
       }
@@ -317,25 +382,26 @@
       var tkn = tokens[i],
         tokenType = tkn.type;
       var d = {
-        "TEXT"      : "name",
-        "OBJECTPROP": "objprop",
-        "KEY"       : "keyword",
-        "COMMENT"   : "comment",
-        "NUMBER"    : "number",
-        "FUNCTION"  : "function",
-        "ARGUMENT"  : "argument",
-        "CAPITAL"   : "capital",
-        "METHOD"    : "method",
-        "STRING"    : "string",
-        "REGEX"     : "regex",
-        "OPERATOR"  : "operator"
-      }
+        TEXT: "name",
+        OBJECTPROP: "objprop",
+        KEY: "keyword",
+        COMMENT: "comment",
+        NUMBER: "number",
+        FUNCTION: "function",
+        ARGUMENT: "argument",
+        CAPITAL: "capital",
+        METHOD: "method",
+        STRING: "string",
+        REGEX: "regex",
+        OPERATOR: "operator",
+      };
       if (tokenType == "NEWLINE") {
         formatted += `</span><span class='js-newline' style="height:${lineHeight}px">`;
       } else if (tokenType == "OTHER" || tokenType == "LPAREN") {
         formatted += tkn.token;
       } else {
-        formatted += "<span class='js-" + d[tokenType] + "'>" + tkn.token + "</span>"
+        formatted +=
+          "<span class='js-" + d[tokenType] + "'>" + tkn.token + "</span>";
       }
     }
     return formatted;
