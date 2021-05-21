@@ -1,2 +1,2 @@
-# Colourful
+# colorful
 JS Syntax highlighter
