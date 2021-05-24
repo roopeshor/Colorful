@@ -29,6 +29,7 @@
 }
 .colorful-output span {
   outline: none;
+  display: inline-block;
 }
 .js-string {
   color:#1cca41;

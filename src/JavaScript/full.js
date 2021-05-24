@@ -1,16 +1,14 @@
 (function () {
   // useful stuffs
 
-  // RegExes for matching stuffs
-  //regular expressions
+  // RegExes 
   var KeywordRE =
     /^(await|break|case|catch|class|const|continue|debugger|default|delete|do|else|enum|export|extends|false|finally|for|function|if|implements|import|in|instanceof|interface|let|NaN|native|new|null|package|private|protected|public|return|static|super|switch|this|throw|true|try|typeof|undefined|var|void|while|with|yield)$/;
   var operatorRE = /[=+\-*/%!<>&|:?]*/;
-  var nameCharRE = /[\wα-ζΑ-Ζ\$]/;
+  var nameCharRE = /[\wͰ-Ͽ\$]/;
   var number = /^(\d*(\.\d*)?|0x[0-9a-f]*|0b[01]*|\d+(\.\d*)?(e|E)\d*)$/;
   var commentRE = /((\/\*[\s\S]*?\*\/|\/\*[\s\S]*)|(\/\/.*))/;
-  var stringRE =
-    /('(((\\)+(')?)|([^']))*')|("(((\\)+(")?)|([^"]))*")/;
+  var stringRE = /('(((\\)+(')?)|([^']))*')|("(((\\)+(")?)|([^"]))*")/;
   var regexRE =
     /^\/((?![*+?])(?:[^\r\n\[/\\]|\\.|\[(?:[^\r\n\]\\]|\\.)*\])+)\/((?:g(?:im?|mi?)?|i(?:gm?|mg?)?|m(?:gi?|ig?)?)?)/;
   // builtIn objects
@@ -51,7 +49,6 @@
   String.prototype.reverse = function () {
     return this.split("").reverse().join("");
   };
-  
 
   /**
    * converts characters into html char codes
@@ -71,13 +68,13 @@
     if (codes.length) {
       for (var k = 0; k < codes.length; k++) {
         var block = codes[k];
-        var ln = block.getAttribute("lineNumbering")
-        var lnBool = typeof ln == "string"?true:false;
+        var ln = block.getAttribute("lineNumbering");
+        var lnBool = typeof ln == "string" ? true : false;
         var cfg = {
           tabIndex: block.getAttribute("tabindex") || config.tabIndex,
           fontSize: block.getAttribute("fontsize") || config.fontSize,
           lineHeight: block.getAttribute("lineheight") || config.lineHeight,
-          enableLineNumbering:lnBool
+          enableLineNumbering: lnBool,
         };
         highlight(codes[k], cfg);
       }
@@ -99,11 +96,21 @@
       complete = "<table border=0><tr><td><pre class='colorful-numberRow'>";
       for (var i = 1; i <= lineCount; i++) {
         complete += i;
-        if (i < lineCount) complete += "\n"
+        if (i < lineCount) complete += "\n";
       }
-      complete += '</pre></td><td><pre class="colorful-code"><code id="colorful-output" tabindex='+cfg.tabIndex+'>'+markuped+'</code></pre></td></tr></table>';
+      complete +=
+        '</pre></td><td><pre class="colorful-code"><code id="colorful-output" tabindex=' +
+        cfg.tabIndex +
+        ">" +
+        markuped +
+        "</code></pre></td></tr></table>";
     } else {
-      complete = '<pre class="colorful-code"><code id="colorful-output" tabindex='+cfg.tabIndex+'>'+markuped+'</code></pre>'
+      complete =
+        '<pre class="colorful-code"><code id="colorful-output" tabindex=' +
+        cfg.tabIndex +
+        ">" +
+        markuped +
+        "</code></pre>";
     }
     container.style.fontSize = cfg.fontSize + "px";
     container.innerHTML = complete;
@@ -114,7 +121,6 @@ compile time: ${compileTime.toFixed(4)} ms
 compile speed: ${speed} kib/s`);
   }
 
-  
   /**
    * tokenize input text
    *
@@ -131,29 +137,30 @@ compile speed: ${speed} kib/s`);
       braceUnMatchEnd = false;
     var i = 0;
     while (i < len) {
-      word = text.substring(i).match(/^[\wα-ζΑ-Ζ$]+/);
+      word = text.substring(i).match(/^[\wͰ-Ͽ$]+/);
       var isNum, lastTkn;
       if (word) {
         var v = word[0];
-        isNum = v.match(number)
+        isNum = v.match(number);
         var c = isNum && text[i + v.length] == ".";
-        lastTkn = tokens[tokens.length-1] || {};
+        lastTkn = tokens[tokens.length - 1] || {};
         var c2 = /[\.]$/.test(lastTkn.token) && isNum;
         if (c) {
           v += ".";
         }
         i += v.length;
         if (c2) {
-          v = "."+v;
-          if (lastTkn.token != ".") lastTkn.token = lastTkn.token.substr(0, lastTkn.token.length-1);
+          v = "." + v;
+          if (lastTkn.token != ".")
+            lastTkn.token = lastTkn.token.substr(0, lastTkn.token.length - 1);
           else tokens.pop();
         }
-        tokens.push(readWordToken(v));
+        readWordToken(v);
         if (c) continue;
         mergeSameTypes();
       }
       if (i == len) break;
-      lastTkn = tokens[tokens.length-1] || emptyToken;
+      lastTkn = tokens[tokens.length - 1] || emptyToken;
       /*
       after matching a word there will be a non alphanumeric(and non '$') code
       there will be something else the following code analyses that
@@ -164,86 +171,92 @@ compile speed: ${speed} kib/s`);
       if (/\s/.test(char)) {
         // next character is a space/tab/line break
         var space = text.substring(i).match(/[\s]+/)[0];
-        lastTkn.token += space;
+        if (lastTkn.token) lastTkn.token += space;
+        else addToken(T_TEXT, space)
         i += space.length;
       } else if (next2 == "//" || next2 == "/*") {
         // comment ahead
         var comment = text.substring(i, len).match(commentRE)[0];
         i += comment.length;
-        tokens.push({ type: T_COMMENT, token: comment.replaceSpecHTMLChars() });
-        
+        addToken(T_COMMENT, comment.replaceSpecHTMLChars());
       } else if (char == "'" || char == '"') {
         // string ahead
         var str = text.substring(i, len).match(stringRE)[0];
-        i += str.length
-        readStr(str);
+        i += str.length;
+        addToken(T_STRING, str);
       } else if (char == "`") {
         // multiline string ahead
 
-        tokens.push({type: T_STRING, token: "`"});
+        addToken(T_STRING, "`");
         i++;
-        var tkn = "";
+        var str = "";
         while (i < len) {
           var ch = text[i];
           if (ch != "`") {
             if (text.substr(i, 2) == "${") {
-              readStr(tkn);
-              tkn = "";
-              tokens.push({type: T_OPERATOR, token: "${"});
-              i+=2;
-              var out = tokenize(text.substring(i), {braceUnMatch: "break"});
-              if (out.tokens.length) tokens = tokens.concat(out.tokens)
+              addToken(T_STRING, str);
+              str = "";
+              addToken(T_OPERATOR, "${");
+              i += 2;
+              var out = tokenize(text.substring(i), { braceUnMatch: "break" });
+              if (out.tokens.length) tokens = tokens.concat(out.tokens);
               if (out.braceUnmatchEnd) {
-                tokens.push({type: T_OPERATOR, token: "}"});
+                addToken(T_OPERATOR, "}");
                 i++;
               }
               i += out.inputEnd;
             } else {
-              tkn += ch;
+              str += ch;
               i++;
             }
           } else if (text[i - 1] == "\\") {
             if (text[i - 2] != "//") {
-              tkn += ch;
+              str += ch;
               i++;
             } else {
-              readStr(tkn);
+              addToken(T_STRING, str);
               break;
             }
           } else {
-            tkn += ch;
+            str += ch;
             i++;
             break;
           }
-          
         }
-        if (tkn != "") readStr(tkn);
-        
+        if (str != "") addToken(T_STRING, str);
       } else if (char.match(operatorRE)[0]) {
         // math operators
-        if (char == "/" && !/[\wα-ζΑ-Ζ$]/.test(text[i - 1])) {
+        if (char == "/" && !/[\wͰ-Ͽ$]/.test(text[i - 1])) {
           // search for regular expressions
           var re = text.substring(i, len).match(regexRE);
           if (re) {
             // regular expression ahead
-            tokens.push({ type: T_REGEX, token: re[0] });
+            addToken(T_REGEX, re[0]);
             i += re[0].length;
           }
-        } 
+        }
         var operators = text.substring(i).match(operatorRE)[0];
         if (operators == "=>") {
           if (lastTkn.type == "TEXT") {
             lastTkn.type = "ARGUMENT";
-          } else if (lastTkn.type == "OTHER" && /\)\s*$/.test(lastTkn.token)) {
-            var txt = text.substring(0, i-1).reverse().match(/[^(]*/)[0]
+          } else if (/\)\s*$/.test(lastTkn.token)) {
+            var initialScopeLevel = scopeTree.length;
+            var argsarr = [tokens[tokens.length-1]];
+            for (var k = tokens.length - 2; k >= 0; k--) {
+              var tk = tokens[k];
+              argsarr.push(tk);
+              if (tk.type == T_OTHER && tk.scopeLevel == initialScopeLevel) {
+                tokens.splice(k);
+                break
+              }
+            }
+            argsarr.reverse();
+            readArgumentsInTokens(argsarr, initialScopeLevel+1, false);
           }
         }
         // finds next group of operators
         i += operators.length;
-        tokens.push({
-          type: T_OPERATOR,
-          token: operators.replaceSpecHTMLChars(),
-        });
+        addToken(T_OPERATOR, operators.replaceSpecHTMLChars());
       } else if (char == "(") {
         // function name
         var tl = tokens.length;
@@ -251,12 +264,13 @@ compile speed: ${speed} kib/s`);
         var prevt = prev.token || "";
         var pprev = tokens[tl - 2] || emptyToken;
         var ppprev = tokens[tl - 3] || emptyToken;
-        tokens.push({ type: T_OTHER, token: "(" });
+        addToken(T_OTHER, "(");
         i++;
+        scopeTree.push("brace");
         const isFunctionClause =
-          prevt.substr(0,8) == "function" ||
-          pprev.token.substr(0,8) == "function" ||
-          ppprev.token.substr(0,8) == "function" || scopeTree[scopeTree.length-1] == "class";
+          prevt.substr(0, 8) == "function" ||
+          pprev.token.substr(0, 8) == "function" ||
+          scopeTree[scopeTree.length - 1] == "class";
         var prevtIsCh = nameCharRE.test(prevt);
         var pprevtIsCh = nameCharRE.test(pprev.token);
         if (isFunctionClause) {
@@ -270,13 +284,15 @@ compile speed: ${speed} kib/s`);
 
           // reads arguments
           if (next2 != "()") {
-            var argstr = text.substring(i).match(/[^)]*/)[0];
-            tokens = tokens.concat(readArgumentsToken(argstr));
+            var tkn = tokenize(text.substring(i), { parenUnMatch: "break" });
+            var tkns = tkn.tokens;
+            readArgumentsInTokens(tkns);
+            i += tkn.inputEnd;
           }
         } else if (
           prevtIsCh &&
-          /[\wα-ζΑ-Ζ$\s]+/.test(
-            (prevt.reverse().match(/^(\s)*[\wα-ζΑ-Ζ$\s]+/) || [""])[0]
+          /[\wͰ-Ͽ$\s]+/.test(
+            (prevt.reverse().match(/^(\s)*[\wͰ-Ͽ$\s]+/) || [""])[0]
           )
         ) {
           //this is function calling clause
@@ -294,33 +310,52 @@ compile speed: ${speed} kib/s`);
             ppprev.type = T_METHOD;
           }
         }
+      } else if (char == ")") {
+        if (scopeTree.length > 0) {
+          scopeTree.pop();
+        } else if (ErrHandler.parenUnMatch == "break") {
+          parenUnMatchEnd = true;
+          break;
+        }
+        addToken("OTHER", char);
+        i++;
       } else if (char == "{") {
+        addToken("OTHER", char);
+        i++;
         scopeTree.push(scope);
         scope = "empty";
-        addOtherType(char);
       } else if (char == "}") {
         if (scopeTree.length > 0) {
           scopeTree.pop();
         } else if (ErrHandler.braceUnMatch == "break") {
-          braceUnMatchEnd = true
+          braceUnMatchEnd = true;
           break;
         }
-        addOtherType(char);
+        addToken("OTHER", char);
+        i++;
+      } else if (char == "[") {
+        addToken("OTHER", char);
+        i++;
+        scopeTree.push(scope);
+        scope = "empty";
+      } else if (char == "]") {
+        if (scopeTree.length > 0) {
+          scopeTree.pop();
+        } else if (ErrHandler.bracketUnMatch == "break") {
+          bracketUnMatch = true;
+          break;
+        }
+        addToken("OTHER", char);
+        i++;
       } else {
-        addOtherType(char);
+        addToken("OTHER", char);
+        i++;
       }
       mergeSameTypes();
     }
-    console.log(tokens)
-    return {tokens: tokens, inputEnd: i, braceUnmatchEnd: braceUnMatchEnd};
-
-    function addOtherType(ch) {
-      tokens.push({type: "OTHER", token:ch});
-      i++;
-    }
-    
-    function readStr(str){
-      tokens.push({ type: T_STRING, token: str.replaceSpecHTMLChars() });
+    return { tokens: tokens, inputEnd: i, braceUnmatchEnd: braceUnMatchEnd };
+    function addToken(type, token) {
+      tokens.push({ type: type, token: token, scopeLevel: scopeTree.length });
     }
 
     /*
@@ -329,80 +364,72 @@ compile speed: ${speed} kib/s`);
     */
     function mergeSameTypes() {
       var tl = tokens.length;
-      if (tokens[tl - 1].type == tokens[tl - 2]?.type) {
+      if (
+        tokens[tl - 1].type == tokens[tl - 2]?.type &&
+        tokens[tl - 1].scopeLevel == tokens[tl - 2]?.scopeLevel
+      ) {
         tokens[tl - 2].token += tokens[tl - 1].token;
         tokens.pop();
       }
     }
 
     // read arguments
-    function readArgumentsToken(args) {
-      // reads and finds arguments of a function being defined
-      var index = args.length + 1;
-      var argarr = [];
-      var w = "";
-      for (var l = 0; l < args.length; l++) {
-        var ch = args[l];
-        if (ch.match(nameCharRE)) {
-          w += ch;
-        } else {
-          if (/\s/.test(ch)) {
-            w += ch;
-          } else {
-            argarr.push({ type: T_ARGUMENT, token: w });
-            argarr.push({ type: T_TEXT, token: ch });
-            w = "";
-          }
+    function readArgumentsInTokens(tks, base=0, increase=true) {
+      for (var k = 0; k < tks.length; k++) {
+        var tk = tks[k];
+        if (
+          tk.type == T_TEXT &&
+          tk.scopeLevel == base &&
+          tks[k - 1]?.type != T_OPERATOR
+        ) {
+          tk.type = T_ARGUMENT;
         }
+        if (increase) tk.scopeLevel++;
       }
-      if (w != "") argarr.push({ type: T_ARGUMENT, token: w });
-      if (text[i + index] == ")") {
-        argarr.push({ type: T_OTHER, token: ")" }); // adds right paren if it was there
-        index++;
-      }
-      i += index-1;
-      return argarr;
+      tokens = tokens.concat(tks);
     }
 
     // finds the type of word given
     function readWordToken(word) {
-      if (KeywordRE.test(word)) {
+      var pprevt = tokens[tokens.length - 2]?.token || "";
+      var prevt = lastTkn.token || "";
+      if (
+        KeywordRE.test(word) || // global keywords
+        (word == "arguments" &&
+          scopeTree[scopeTree.length - 1] == "function") || // argument inside function clause
+        ((word == "get" || word == "set") &&
+          scopeTree[scopeTree.length - 1] == "class") // get/set inside class scope
+      ) {
         // Keyword
-        if (/(function|if|do|while|for|class|catch|else|finally|switch|try)/.test(word)) {
+        if (
+          /(function|if|do|while|for|class|catch|else|finally|switch|try)/.test(
+            word
+          )
+        ) {
           scope = word;
         }
-        return { type: T_KEY, token: word };
+        addToken(T_KEY, word);
       } else if (number.test(word)) {
-        return { type: T_NUMBER, token: word };
+        addToken(T_NUMBER, word);
       } else if (
         builtInObject.test(word) &&
-        tokens[tokens.length - 2]?.token != "function" &&
-        lastTkn.token[0] != "."
+        pprevt != "function" &&
+        prevt[0] != "."
       ) {
         // builtin objects word
-        return { type: T_CAPITAL, token: word };
-      } else if (
-        (lastTkn.token || "").endsWith(".") ||
-        (tokens[tokens.length - 2]?.token || "").endsWith(".")
-      ) {
+        addToken(T_CAPITAL, word);
+      } else if (prevt.endsWith(".") || pprevt.endsWith(".")) {
         // object property
-        return { type: T_OBJECTPROP, token: word };
-      } else if (word == "arguments" && scopeTree[scopeTree.length - 1] == "function") {
-        return { type: T_KEY, token: word };
-      } else if ((word == "get" || word == "set") && scopeTree[scopeTree.length - 1] == "class") {
-        return { type: T_KEY, token: word };
+        addToken(T_OBJECTPROP, word);
       } else {
-        return { type: T_TEXT, token: word };
+        addToken(T_TEXT, word);
       }
     }
   }
 
   function parseToken(tokens) {
     var formatted = ``;
-    for (var i = 0; i < tokens.length; i++) {
-      var tkn = tokens[i],
-        tokenType = tkn.type;
-      var d = {
+    var d = {
         TEXT: "name",
         OBJECTPROP: "objprop",
         KEY: "keyword",
@@ -413,8 +440,11 @@ compile speed: ${speed} kib/s`);
         METHOD: "method",
         STRING: "string",
         REGEX: "regex",
-        OPERATOR: "operator"
+        OPERATOR: "operator",
       };
+    for (var i = 0; i < tokens.length; i++) {
+      var tkn = tokens[i],
+        tokenType = tkn.type;
       if (tokenType != "OTHER") {
         formatted +=
           "<span class='js-" + d[tokenType] + "'>" + tkn.token + "</span>";
