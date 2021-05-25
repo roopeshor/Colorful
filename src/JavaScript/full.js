@@ -5,7 +5,7 @@
   var KeywordRE =
     /^(await|break|case|catch|class|const|continue|debugger|default|delete|do|else|enum|export|extends|false|finally|for|function|if|implements|import|in|instanceof|interface|let|NaN|native|new|null|package|private|protected|public|return|static|super|switch|this|throw|true|try|typeof|undefined|var|void|while|with|yield)$/;
   var operatorRE = /[=+\-*/%!<>&|:?]*/;
-  var nameCharRE = /[\wͰ-Ͽ\$]/;
+  var nameCharRE = /^[\w\u00C0-\uffff\$]+/;
   var number = /^(\d*(\.\d*)?|0x[0-9a-f]*|0b[01]*|\d+(\.\d*)?(e|E)\d*)$/;
   var commentRE = /((\/\*[\s\S]*?\*\/|\/\*[\s\S]*)|(\/\/.*))/;
   var stringRE = /('(((\\)+(')?)|([^']))*')|("(((\\)+(")?)|([^"]))*")/;
@@ -14,7 +14,7 @@
   // builtIn objects
   var builtInObject =
     /^(AggregateError|Buffer|Array|ArrayBuffer|AsyncFunction|AsyncGenerator|AsyncGeneratorFunction|Atomics|BigInt|BigInt64Array|BigUint64Array|Boolean|DataView|Date|Error|EvalError|Float32Array|Float64Array|Function|Generator|GeneratorFunction|Int16Array|Int32Array|Int8Array|InternalError|Intl|JSON|Map|Math|Number|Object|Promise|Proxy|RangeError|ReferenceError|Reflect|RegExp|Set|SharedArrayBuffer|String|Symbol|SyntaxError|TypeError|URIError|Uint16Array|Uint32Array|Uint8Array|Uint8ClampedArray|WeakMap|WeakSet|WebAssembly)$/;
-
+  var whitespace = /[\s]+/;
   // types of tokens
   const T_STRING = "STRING",
     T_KEY = "KEY",
@@ -27,7 +27,6 @@
     T_OBJECTPROP = "OBJECTPROP",
     T_METHOD = "METHOD",
     T_REGEX = "REGEX",
-    T_LPAREN = "LPAREN",
     T_OTHER = "OTHER";
   // an empty token
   var emptyToken = { type: "", token: "" };
@@ -39,8 +38,6 @@
     enableLineNumbering: true,
     lineHeight: 20,
   };
-
-  // useful string patterns
 
   /**
    * Reverses the string
@@ -82,7 +79,6 @@
   };
 
   function highlight(container, cfg) {
-    var w_h = 0.5498367766955267; // width/height of a monospace number
     var text = container.innerText;
 
     var d1 = window.performance.now();
@@ -90,7 +86,6 @@
     var markuped = parseToken(out.tokens, cfg.lineHeight);
     var compileTime = window.performance.now() - d1;
     var complete;
-    var intentWidth = 0;
     if (cfg.enableLineNumbering) {
       var lineCount = text.match(/\n/g)?.length + 1 || 1;
       complete = "<table border=0><tr><td><pre class='colorful-numberRow'>";
@@ -137,7 +132,7 @@ compile speed: ${speed} kib/s`);
       braceUnMatchEnd = false;
     var i = 0;
     while (i < len) {
-      word = text.substring(i).match(/^[\wͰ-Ͽ$]+/);
+      word = text.substring(i).match(nameCharRE);
       var isNum, lastTkn;
       if (word) {
         var v = word[0];
@@ -168,9 +163,9 @@ compile speed: ${speed} kib/s`);
       var char = text[i]; // next character
       var next2 = text.substr(i, 2); // next two characters
 
-      if (/\s/.test(char)) {
+      if (whitespace.test(char)) {
         // next character is a space/tab/line break
-        var space = text.substring(i).match(/[\s]+/)[0];
+        var space = text.substring(i).match(whitespace)[0];
         if (lastTkn.token) lastTkn.token += space;
         else addToken(T_TEXT, space)
         i += space.length;
@@ -178,7 +173,7 @@ compile speed: ${speed} kib/s`);
         // comment ahead
         var comment = text.substring(i, len).match(commentRE)[0];
         i += comment.length;
-        addToken(T_COMMENT, comment.replaceSpecHTMLChars());
+        addToken(T_COMMENT, comment);
       } else if (char == "'" || char == '"') {
         // string ahead
         var str = text.substring(i, len).match(stringRE)[0];
@@ -198,7 +193,7 @@ compile speed: ${speed} kib/s`);
               str = "";
               addToken(T_OPERATOR, "${");
               i += 2;
-              var out = tokenize(text.substring(i), { braceUnMatch: "break" });
+              var out = tokenize(text.substring(i),{braceUnMatch: "break" });
               if (out.tokens.length) tokens = tokens.concat(out.tokens);
               if (out.braceUnmatchEnd) {
                 addToken(T_OPERATOR, "}");
@@ -226,7 +221,7 @@ compile speed: ${speed} kib/s`);
         if (str != "") addToken(T_STRING, str);
       } else if (char.match(operatorRE)[0]) {
         // math operators
-        if (char == "/" && !/[\wͰ-Ͽ$]/.test(text[i - 1])) {
+        if (char == "/" && !(lastTkn.type == T_TEXT || lastTkn.type == T_OBJECTPROP)) {
           // search for regular expressions
           var re = text.substring(i, len).match(regexRE);
           if (re) {
@@ -256,14 +251,13 @@ compile speed: ${speed} kib/s`);
         }
         // finds next group of operators
         i += operators.length;
-        addToken(T_OPERATOR, operators.replaceSpecHTMLChars());
+        addToken(T_OPERATOR, operators);
       } else if (char == "(") {
         // function name
         var tl = tokens.length;
         var prev = lastTkn;
         var prevt = prev.token || "";
         var pprev = tokens[tl - 2] || emptyToken;
-        var ppprev = tokens[tl - 3] || emptyToken;
         addToken(T_OTHER, "(");
         i++;
         scopeTree.push("brace");
@@ -303,11 +297,6 @@ compile speed: ${speed} kib/s`);
             pprevtIsCh
           ) {
             pprev.type = T_METHOD;
-          } else if (
-            (ppprev.type == "TEXT" || ppprev.type == "OBJECTPROP") &&
-            nameCharRE.test(ppprev.token)
-          ) {
-            ppprev.type = T_METHOD;
           }
         }
       } else if (char == ")") {
@@ -355,7 +344,7 @@ compile speed: ${speed} kib/s`);
     }
     return { tokens: tokens, inputEnd: i, braceUnmatchEnd: braceUnMatchEnd };
     function addToken(type, token) {
-      tokens.push({ type: type, token: token, scopeLevel: scopeTree.length });
+      tokens.push({ type: type, token: token.replaceSpecHTMLChars(), scopeLevel: scopeTree.length });
     }
 
     /*
