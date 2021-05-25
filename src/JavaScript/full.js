@@ -8,7 +8,6 @@
   var nameCharRE = /^[\w\u00C0-\uffff\$]+/;
   var number = /^(\d*(\.\d*)?|0x[0-9a-f]*|0b[01]*|\d+(\.\d*)?(e|E)\d*)$/;
   var commentRE = /((\/\*[\s\S]*?\*\/|\/\*[\s\S]*)|(\/\/.*))/;
-  var stringRE = /(?<!\\)(?:\\{2})*"(?:(?<!\\)(?:\\{2})*\\"|[^"])+(?<!\\)(?:\\{2})*"/;
   var regexRE =
     /^\/((?![*+?])(?:[^\r\n\[/\\]|\\.|\[(?:[^\r\n\]\\]|\\.)*\])+)\/((?:g(?:im?|mi?)?|i(?:gm?|mg?)?|m(?:gi?|ig?)?)?)/;
   // builtIn objects
@@ -37,14 +36,6 @@
     fontSize: 16, // in px
     enableLineNumbering: true,
     lineHeight: 20,
-  };
-
-  /**
-   * Reverses the string
-   * @returns reversed string
-   */
-  String.prototype.reverse = function () {
-    return this.split("").reverse().join("");
   };
 
   /**
@@ -140,19 +131,27 @@ compile speed: ${speed} kib/s`);
         var c = isNum && text[i + v.length] == ".";
         lastTkn = tokens[tokens.length - 1] || {};
         var c2 = /[\.]$/.test(lastTkn.token) && isNum;
+        // debugger
         if (c) {
           v += ".";
         }
         i += v.length;
         if (c2) {
           v = "." + v;
-          if (lastTkn.token != ".")
-            lastTkn.token = lastTkn.token.substr(0, lastTkn.token.length - 1);
-          else tokens.pop();
+          if (lastTkn.token != ".") {
+            if (lastTkn.type == T_NUMBER) {
+              lastTkn.token+=word;
+              continue
+            } else {
+              lastTkn.token = lastTkn.token.substr(0, lastTkn.token.length - 1);
+            }
+          } else {
+            tokens.pop();
+          }
         }
         readWordToken(v);
         if (c) continue;
-        mergeSameTypes();
+        window.Colorful.mergeSameTypes(tokens);
       }
       if (i == len) break;
       lastTkn = tokens[tokens.length - 1] || emptyToken;
@@ -169,11 +168,6 @@ compile speed: ${speed} kib/s`);
         if (lastTkn.token) lastTkn.token += space;
         else addToken(T_TEXT, space)
         i += space.length;
-      } else if (next2 == "//" || next2 == "/*") {
-        // comment ahead
-        var comment = text.substring(i, len).match(commentRE)[0];
-        i += comment.length;
-        addToken(T_COMMENT, comment);
       } else if (char == "'" || char == '"' || char == "`") {
         addToken(T_STRING, char);
         i++;
@@ -209,38 +203,23 @@ compile speed: ${speed} kib/s`);
         }
         if (str != "") addToken(T_STRING, str);
       } else if (char.match(operatorRE)[0]) {
+        var nxt = text.substring(i, len);
         // math operators
-        if (char == "/" && !(lastTkn.type == T_TEXT || lastTkn.type == T_OBJECTPROP)) {
-          // search for regular expressions
-          var re = text.substring(i, len).match(regexRE);
-          if (re) {
-            // regular expression ahead
-            addToken(T_REGEX, re[0]);
-            i += re[0].length;
-          }
+        if (next2 == "//" || next2 == "/*") {
+        // comment ahead
+          var comment = nxt.match(commentRE)[0];
+          i += comment.length;
+          addToken(T_COMMENT, comment);
+        } else if (char == "/" && !(lastTkn.type == T_TEXT || lastTkn.type == T_OBJECTPROP) && regexRE.test(nxt)) {
+          // regular expression ahead
+          var re = nxt.match(regexRE)[0];
+          addToken(T_REGEX, re);
+          i += re.length;
+        } else {
+          //operator
+          addToken(T_OPERATOR, char);
+          i++;
         }
-        var operators = text.substring(i).match(operatorRE)[0];
-        if (operators == "=>") {
-          if (lastTkn.type == "TEXT") {
-            lastTkn.type = "ARGUMENT";
-          } else if (/\)\s*$/.test(lastTkn.token)) {
-            var initialScopeLevel = scopeTree.length;
-            var argsarr = [tokens[tokens.length-1]];
-            for (var k = tokens.length - 2; k >= 0; k--) {
-              var tk = tokens[k];
-              argsarr.push(tk);
-              if (tk.type == T_OTHER && tk.scopeLevel == initialScopeLevel) {
-                tokens.splice(k);
-                break
-              }
-            }
-            argsarr.reverse();
-            readArgumentsInTokens(argsarr, initialScopeLevel+1, false);
-          }
-        }
-        // finds next group of operators
-        i += operators.length;
-        addToken(T_OPERATOR, operators);
       } else if (char == "(") {
         // function name
         var tl = tokens.length;
@@ -249,7 +228,7 @@ compile speed: ${speed} kib/s`);
         var pprev = tokens[tl - 2] || emptyToken;
         addToken(T_OTHER, "(");
         i++;
-        scopeTree.push("brace");
+        scopeTree.push("paren");
         const isFunctionClause =
           prevt.substr(0, 8) == "function" ||
           pprev.token.substr(0, 8) == "function" ||
@@ -274,19 +253,11 @@ compile speed: ${speed} kib/s`);
           }
         } else if (
           prevtIsCh &&
-          /[\wͰ-Ͽ$\s]+/.test(
-            (prevt.reverse().match(/^(\s)*[\wͰ-Ͽ$\s]+/) || [""])[0]
-          )
+          (prev.type == "TEXT" || prev.type == "OBJECTPROP") &&
+          /[\w\u00C0-\uffff$\s]+/.test((prevt.split("").reverse().join("").match(/^(\s)*[\w\u00C0-\uffff$\s]+/) || [""])[0])
         ) {
           //this is function calling clause
-          if ((prev.type == "TEXT" || prev.type == "OBJECTPROP") && prevtIsCh) {
             prev.type = T_METHOD;
-          } else if (
-            (pprev.type == "TEXT" || pprev.type == "OBJECTPROP") &&
-            pprevtIsCh
-          ) {
-            pprev.type = T_METHOD;
-          }
         }
       } else if (char == ")") {
         if (scopeTree.length > 0) {
@@ -315,7 +286,7 @@ compile speed: ${speed} kib/s`);
         addToken("OTHER", char);
         i++;
         scopeTree.push(scope);
-        scope = "empty";
+        scope = "bracket";
       } else if (char == "]") {
         if (scopeTree.length > 0) {
           scopeTree.pop();
@@ -329,66 +300,12 @@ compile speed: ${speed} kib/s`);
         addToken("OTHER", char);
         i++;
       }
-      mergeSameTypes();
+      window.Colorful.mergeSameTypes(tokens);
     }
+    if (char == "\n") tokens[tokens.length-1].token += "\n"; // quick fix
     return { tokens: tokens, inputEnd: i, braceUnmatchEnd: braceUnMatchEnd };
     function addToken(type, token) {
       tokens.push({ type: type, token: token.replaceSpecHTMLChars(), scopeLevel: scopeTree.length });
-    }
-
-    function readStr() {
-      addToken(T_STRING, char);
-        i++;
-        var str = "";
-        while (i < len) {
-          var ch = text[i];
-          if (ch != char) {
-            if (char=="`" && text.substr(i, 2) == "${") {
-              addToken(T_STRING, str);
-              str = "";
-              addToken(T_OPERATOR, "${");
-              i += 2;
-              var out = tokenize(text.substring(i),{braceUnMatch: "break" });
-              if (out.tokens.length) tokens = tokens.concat(out.tokens);
-              if (out.braceUnmatchEnd) {
-                addToken(T_OPERATOR, "}");
-                i++;
-              }
-              i += out.inputEnd;
-            } else {
-              str += ch;
-              i++;
-            }
-          } else if (text[i - 1] == "\\") {
-            if (text[i - 2] != "\\") {
-              str += ch;
-              i++;
-            } else {
-              addToken(T_STRING, str);
-              break;
-            }
-          } else {
-            str += ch;
-            i++;
-            break;
-          }
-        }
-        if (str != "") addToken(T_STRING, str);
-    }
-
-    /*
-    merges same type of consecutive tokens into
-    single one to minimize tokens to parse
-    */
-    function mergeSameTypes() {
-      var tl = tokens.length;
-      if (
-        tokens[tl - 1].type == tokens[tl - 2]?.type &&
-        tokens[tl - 1].scopeLevel == tokens[tl - 2]?.scopeLevel
-      ) {
-        tokens[tl - 2].token += tokens[tl - 1].token;
-        tokens.pop();
-      }
     }
 
     // read arguments
@@ -420,7 +337,7 @@ compile speed: ${speed} kib/s`);
       ) {
         // Keyword
         if (
-          /(function|if|do|while|for|class|catch|else|finally|switch|try)/.test(
+          /(function|if|do|while|for|class|catch|else|finally|switch|try|)/.test(
             word
           )
         ) {
@@ -431,7 +348,7 @@ compile speed: ${speed} kib/s`);
         addToken(T_NUMBER, word);
       } else if (
         builtInObject.test(word) &&
-        pprevt != "function" &&
+        !/^(function|var|const|let)/.test(prevt) &&
         prevt[0] != "."
       ) {
         // builtin objects word
