@@ -1,12 +1,10 @@
-(function () {
-  // useful stuffs
-
+(function (w) {
   // RegExes 
   var KeywordRE =
     /^(await|break|case|catch|class|const|continue|debugger|default|delete|do|else|enum|export|extends|false|finally|for|function|if|implements|import|in|instanceof|interface|let|NaN|native|new|null|package|private|protected|public|return|static|super|switch|this|throw|true|try|typeof|undefined|var|void|while|with|yield)$/;
   var operatorRE = /[=+\-*/%!<>&|:?]*/;
   var nameCharRE = /^[\w\u00C0-\uffff\$]+/;
-  var number = /^(\d*(\.\d*)?|0x[0-9a-f]*|0b[01]*|\d+(\.\d*)?(e|E)\d*)$/;
+  var number = /^(\d*(\.\d*)?|0x[0-9a-f]*|0b[01]*|\d+(\.\d*)?(e|E)\d+)$/;
   var commentRE = /((\/\*[\s\S]*?\*\/|\/\*[\s\S]*)|(\/\/.*))/;
   var regexRE =
     /^\/((?![*+?])(?:[^\r\n\[/\\]|\\.|\[(?:[^\r\n\]\\]|\\.)*\])+)\/((?:g(?:im?|mi?)?|i(?:gm?|mg?)?|m(?:gi?|ig?)?)?)/;
@@ -31,80 +29,21 @@
   var emptyToken = { type: "", token: "" };
 
   // default configurations for output
-  var config = {
-    tabIndex: 4,
-    fontSize: 16, // in px
-    enableLineNumbering: true,
-    lineHeight: 20,
-  };
-
   /**
-   * converts characters into html char codes
-   * "<" -> "&lt;"
-   * ">" -> "&gt;"
-   * "&" -> "&amp;"
-   * @returns string replacing some characters
+   * combines tokenizer and parser
+   * @param {HTMLElement} container
+   * @param {Object} cfg
    */
-  String.prototype.replaceSpecHTMLChars = function () {
-    return this.replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
-  };
-
-  window.onload = function () {
-    var codes = document.getElementsByClassName("js-colorful");
-    if (codes.length) {
-      for (var k = 0; k < codes.length; k++) {
-        var block = codes[k];
-        var ln = block.getAttribute("lineNumbering");
-        var lnBool = typeof ln == "string" ? true : false;
-        var cfg = {
-          tabIndex: block.getAttribute("tabindex") || config.tabIndex,
-          fontSize: block.getAttribute("fontsize") || config.fontSize,
-          lineHeight: block.getAttribute("lineheight") || config.lineHeight,
-          enableLineNumbering: lnBool,
-        };
-        highlight(codes[k], cfg);
-      }
-    }
-  };
-
   function highlight(container, cfg) {
     var text = container.innerText;
-
-    var d1 = window.performance.now();
+    var d1 = w.performance.now();
     var out = tokenize(text);
-    var markuped = parseToken(out.tokens, cfg.lineHeight);
-    var compileTime = window.performance.now() - d1;
-    var complete;
-    if (cfg.enableLineNumbering) {
-      var lineCount = text.match(/\n/g)?.length + 1 || 1;
-      complete = "<table border=0><tr><td><pre class='colorful-numberRow'>";
-      for (var i = 1; i <= lineCount; i++) {
-        complete += i;
-        if (i < lineCount) complete += "\n";
-      }
-      complete +=
-        '</pre></td><td><code id="colorful-code" tabindex=' +
-        cfg.tabIndex +
-        ">" +
-        markuped +
-        "</code></td></tr></table>";
-    } else {
-      complete =
-        '<code id="colorful-code" tabindex=' +
-        cfg.tabIndex +
-        ">" +
-        markuped +
-        "</code>";
-    }
+    var markuped = parse(out.tokens, cfg.lineHeight);
+    var compileTime = w.performance.now() - d1;
     container.style.fontSize = cfg.fontSize + "px";
-    container.innerHTML = complete;
+    container.innerHTML = w.Colorful.finishUp(cfg, text, markuped);
     var speed = ((text.length / 1024 / compileTime) * 1000).toFixed(3); //kb/s
-    console.log(`total code analysed: ${(text.length / 1024).toFixed(3)} kb
-found: ${out.tokens.length} tokens
-compile time: ${compileTime.toFixed(4)} ms
-compile speed: ${speed} kib/s`);
+    console.log(`total code analysed: ${(text.length / 1024).toFixed(3)} kb\nfound: ${out.tokens.length} tokens\ncompile time: ${compileTime.toFixed(4)} ms\ncompile speed: ${speed} kib/s`);
   }
 
   /**
@@ -119,8 +58,7 @@ compile speed: ${speed} kib/s`);
     var tokens = [],
       word = "",
       scopeTree = [],
-      scope = "empty",
-      braceUnMatchEnd = false;
+      scope = "empty";
     var i = 0;
     while (i < len) {
       word = text.substring(i).match(nameCharRE);
@@ -150,7 +88,7 @@ compile speed: ${speed} kib/s`);
         }
         readWordToken(v);
         if (c) continue;
-        window.Colorful.mergeSameTypes(tokens);
+        w.Colorful.mergeSameTypes(tokens);
       }
       if (i == len) break;
       lastTkn = tokens[tokens.length - 1] || emptyToken;
@@ -171,10 +109,10 @@ compile speed: ${speed} kib/s`);
         addToken(T_STRING, char);
         i++;
         var str = "";
-        var slashes = 0;
+        var slashes = 0; // number of backslashes
         while (i < len) {
           var ch = text[i];
-          if (ch != char) {
+          if (ch != char) { // if not the quotes
             if (ch!="\\") slashes = 0;
             else slashes++;
             if (char=="`" && text.substr(i, 2) == "${") {
@@ -182,19 +120,22 @@ compile speed: ${speed} kib/s`);
               str = "";
               addToken(T_OPERATOR, "${");
               i += 2;
-              var out = tokenize(text.substring(i),{braceUnMatch: "break" });
+              var nxt = text.substring(i);
+              var out = tokenize(nxt,{braceUnMatch: "break" });
               if (out.tokens.length) tokens = tokens.concat(out.tokens);
-              if (out.braceUnmatchEnd) {
+              console.log(out.inputEnd, nxt.length)
+              i += out.inputEnd;
+              if (out.inputEnd != nxt.length) {
                 addToken(T_OPERATOR, "}");
                 i++;
+              } else if (text[i-1] == "\n") {
+                tokens[tokens.length-1].token += "\n"; // quick fix
               }
-              i += out.inputEnd;
             } else {
               str += ch;
               i++;
             }
           } else {
-            
             str += ch;
             i++;
             if (slashes%2 == 0) break;
@@ -202,7 +143,7 @@ compile speed: ${speed} kib/s`);
         }
         if (str != "") addToken(T_STRING, str);
       } else if (char.match(operatorRE)[0]) {
-        var nxt = text.substring(i, len);
+        var nxt = text.substring(i);
         // math operators
         if (next2 == "//" || next2 == "/*") {
         // comment ahead
@@ -282,7 +223,6 @@ compile speed: ${speed} kib/s`);
         if (scopeTree.length > 0) {
           scopeTree.pop();
         } else if (ErrHandler.parenUnMatch == "break") {
-          parenUnMatchEnd = true;
           break;
         }
         addToken("OTHER", char);
@@ -296,7 +236,6 @@ compile speed: ${speed} kib/s`);
         if (scopeTree.length > 0) {
           scopeTree.pop();
         } else if (ErrHandler.braceUnMatch == "break") {
-          braceUnMatchEnd = true;
           break;
         }
         addToken("OTHER", char);
@@ -310,7 +249,6 @@ compile speed: ${speed} kib/s`);
         if (scopeTree.length > 0) {
           scopeTree.pop();
         } else if (ErrHandler.bracketUnMatch == "break") {
-          bracketUnMatch = true;
           break;
         }
         addToken("OTHER", char);
@@ -319,11 +257,11 @@ compile speed: ${speed} kib/s`);
         addToken("OTHER", char);
         i++;
       }
-      window.Colorful.mergeSameTypes(tokens);
+      w.Colorful.mergeSameTypes(tokens);
     }
     if (char == "\n") tokens[tokens.length-1].token += "\n"; // quick fix
-    return { tokens: tokens, inputEnd: i, braceUnmatchEnd: braceUnMatchEnd };
-    function addToken(type, token) {
+    return { tokens: tokens, inputEnd: i };
+    function addToken(type, token,) {
       tokens.push({ type: type, token: token.replaceSpecHTMLChars(), scopeLevel: scopeTree.length });
     }
 
@@ -381,7 +319,12 @@ compile speed: ${speed} kib/s`);
     }
   }
 
-  function parseToken(tokens) {
+  /**
+   * parse tokens to generate html string
+   * @param {Array} tokens array of tokens
+   * @return {String}  
+   */
+  function parse(tokens) {
     var formatted = ``;
     var d = {
         TEXT: "name",
@@ -401,11 +344,18 @@ compile speed: ${speed} kib/s`);
         tokenType = tkn.type;
       if (tokenType != "OTHER") {
         formatted +=
-          "<span class='js-" + d[tokenType] + "'>" + tkn.token + "</span>";
+          "<span class='" + d[tokenType] + "'>" + tkn.token + "</span>";
       } else {
         formatted += tkn.token;
       }
     }
     return formatted;
   }
-})();
+
+  w.Colorful.langs.push("JS")
+  w.Colorful.JS_Compiler = {
+    compile: highlight,
+    tokenize: tokenize,
+    parse: parse,
+  };
+})(window);

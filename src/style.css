@@ -1,4 +1,4 @@
-.js-colorful {
+.colorful {
   display: inherit;
   margin: 5px;
   padding: 5px;
@@ -21,42 +21,38 @@
   margin-left: 0;
 }
 
-.colorful-code span {
-  outline: none;
-  display: inline-block;
-}
-.js-string {
+.colorful-code .string {
   color:#1cca41;
 }
-.js-keyword {
+.colorful-code .keyword {
   color:#c678dd;
 }
-.js-comment{
+.colorful-code .comment{
   color:#777;
 }
-.js-operator{
+.colorful-code .operator{
   color:#1598a7;
 }
-.js-number{
+.colorful-code .number{
   color:#ffa601;
 }
-.js-method{
+.colorful-code .method{
   color:#80cc43;
 }
-.js-argument{
+.colorful-code .argument{
   color:#ff983e;
 }
-.js-regex{
+.colorful-code .regex{
   color:#f7aa67;
 }
-.js-object{
+.colorful-code .object{
   color:#e28306;
 }
-.js-capital{
+.colorful-code .capital{
   color:#3cbef2;
   font-style: italic;
 }
-.js-objprop {
+.colorful-code .objprop {
   color:#e9e482;
 }
 .colorful-numberRow {
