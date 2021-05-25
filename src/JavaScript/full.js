@@ -85,18 +85,18 @@
         if (i < lineCount) complete += "\n";
       }
       complete +=
-        '</pre></td><td><pre class="colorful-code"><code id="colorful-output" tabindex=' +
+        '</pre></td><td><code id="colorful-code" tabindex=' +
         cfg.tabIndex +
         ">" +
         markuped +
-        "</code></pre></td></tr></table>";
+        "</code></td></tr></table>";
     } else {
       complete =
-        '<pre class="colorful-code"><code id="colorful-output" tabindex=' +
+        '<code id="colorful-code" tabindex=' +
         cfg.tabIndex +
         ">" +
         markuped +
-        "</code></pre>";
+        "</code>";
     }
     container.style.fontSize = cfg.fontSize + "px";
     container.innerHTML = complete;
@@ -131,7 +131,6 @@ compile speed: ${speed} kib/s`);
         var c = isNum && text[i + v.length] == ".";
         lastTkn = tokens[tokens.length - 1] || {};
         var c2 = /[\.]$/.test(lastTkn.token) && isNum;
-        // debugger
         if (c) {
           v += ".";
         }
@@ -210,11 +209,31 @@ compile speed: ${speed} kib/s`);
           var comment = nxt.match(commentRE)[0];
           i += comment.length;
           addToken(T_COMMENT, comment);
-        } else if (char == "/" && !(lastTkn.type == T_TEXT || lastTkn.type == T_OBJECTPROP) && regexRE.test(nxt)) {
+        } else if (char == "/" && !(lastTkn.type == T_TEXT || lastTkn.type == T_OBJECTPROP || lastTkn.type == T_NUMBER) && regexRE.test(nxt)) {
           // regular expression ahead
-          var re = nxt.match(regexRE)[0];
-          addToken(T_REGEX, re);
-          i += re.length;
+          var continueWork = true;
+          if (lastTkn.type == T_COMMENT) {
+            for (var k = tokens.length-1; k >= 0; k--) {
+              var tk = tokens[k]
+              if (tk.type == T_COMMENT) {
+                continue;
+              } else if (tk.type == T_TEXT || tk.type == T_OBJECTPROP || tk.type == T_NUMBER) {
+                continueWork = false;
+                break;
+              } else {
+                break;
+              }
+            }
+          }
+          if (continueWork) {
+            var re = nxt.match(regexRE)[0];
+            addToken(T_REGEX, re);
+            i += re.length;
+          } else {
+            //operator
+            addToken(T_OPERATOR, char);
+            i++;  
+          }
         } else {
           //operator
           addToken(T_OPERATOR, char);
