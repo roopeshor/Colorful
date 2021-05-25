@@ -8,7 +8,7 @@
   var nameCharRE = /^[\w\u00C0-\uffff\$]+/;
   var number = /^(\d*(\.\d*)?|0x[0-9a-f]*|0b[01]*|\d+(\.\d*)?(e|E)\d*)$/;
   var commentRE = /((\/\*[\s\S]*?\*\/|\/\*[\s\S]*)|(\/\/.*))/;
-  var stringRE = /('(((\\)+(')?)|([^']))*')|("(((\\)+(")?)|([^"]))*")/;
+  var stringRE = /(?<!\\)(?:\\{2})*"(?:(?<!\\)(?:\\{2})*\\"|[^"])+(?<!\\)(?:\\{2})*"/;
   var regexRE =
     /^\/((?![*+?])(?:[^\r\n\[/\\]|\\.|\[(?:[^\r\n\]\\]|\\.)*\])+)\/((?:g(?:im?|mi?)?|i(?:gm?|mg?)?|m(?:gi?|ig?)?)?)/;
   // builtIn objects
@@ -174,21 +174,17 @@ compile speed: ${speed} kib/s`);
         var comment = text.substring(i, len).match(commentRE)[0];
         i += comment.length;
         addToken(T_COMMENT, comment);
-      } else if (char == "'" || char == '"') {
-        // string ahead
-        var str = text.substring(i, len).match(stringRE)[0];
-        i += str.length;
-        addToken(T_STRING, str);
-      } else if (char == "`") {
-        // multiline string ahead
-
-        addToken(T_STRING, "`");
+      } else if (char == "'" || char == '"' || char == "`") {
+        addToken(T_STRING, char);
         i++;
         var str = "";
+        var slashes = 0;
         while (i < len) {
           var ch = text[i];
-          if (ch != "`") {
-            if (text.substr(i, 2) == "${") {
+          if (ch != char) {
+            if (ch!="\\") slashes = 0;
+            else slashes++;
+            if (char=="`" && text.substr(i, 2) == "${") {
               addToken(T_STRING, str);
               str = "";
               addToken(T_OPERATOR, "${");
@@ -204,18 +200,11 @@ compile speed: ${speed} kib/s`);
               str += ch;
               i++;
             }
-          } else if (text[i - 1] == "\\") {
-            if (text[i - 2] != "//") {
-              str += ch;
-              i++;
-            } else {
-              addToken(T_STRING, str);
-              break;
-            }
           } else {
+            
             str += ch;
             i++;
-            break;
+            if (slashes%2 == 0) break;
           }
         }
         if (str != "") addToken(T_STRING, str);
@@ -345,6 +334,46 @@ compile speed: ${speed} kib/s`);
     return { tokens: tokens, inputEnd: i, braceUnmatchEnd: braceUnMatchEnd };
     function addToken(type, token) {
       tokens.push({ type: type, token: token.replaceSpecHTMLChars(), scopeLevel: scopeTree.length });
+    }
+
+    function readStr() {
+      addToken(T_STRING, char);
+        i++;
+        var str = "";
+        while (i < len) {
+          var ch = text[i];
+          if (ch != char) {
+            if (char=="`" && text.substr(i, 2) == "${") {
+              addToken(T_STRING, str);
+              str = "";
+              addToken(T_OPERATOR, "${");
+              i += 2;
+              var out = tokenize(text.substring(i),{braceUnMatch: "break" });
+              if (out.tokens.length) tokens = tokens.concat(out.tokens);
+              if (out.braceUnmatchEnd) {
+                addToken(T_OPERATOR, "}");
+                i++;
+              }
+              i += out.inputEnd;
+            } else {
+              str += ch;
+              i++;
+            }
+          } else if (text[i - 1] == "\\") {
+            if (text[i - 2] != "\\") {
+              str += ch;
+              i++;
+            } else {
+              addToken(T_STRING, str);
+              break;
+            }
+          } else {
+            str += ch;
+            i++;
+            break;
+          }
+        }
+        if (str != "") addToken(T_STRING, str);
     }
 
     /*
