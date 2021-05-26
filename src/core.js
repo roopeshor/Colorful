@@ -1,7 +1,7 @@
 (function (w) {
   w.Colorful = {
     config: {
-      tabIndex: 4,
+      tabIndex: 2,
       enableLineNumbering: true,
     },
     langs: [], // languages

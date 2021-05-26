@@ -1,10 +1,13 @@
 (function (w) {
   // RegExes
   var KeywordRE =
-    /^(await|break|case|catch|class|const|continue|debugger|default|delete|do|else|enum|export|extends|false|finally|for|function|if|implements|import|in|instanceof|interface|let|NaN|native|new|null|package|private|protected|public|return|static|super|switch|this|throw|true|try|typeof|undefined|var|void|while|with|yield)$/;
+    /^(await|break|case|catch|class|const|continue|debugger|default|delete|do|else|enum|export|extends|false|finally|for|function|if|implements|import|in|instanceof|interface|let|native|new|null|package|private|protected|public|return|static|super|switch|this|throw|true|try|typeof|undefined|var|void|while|with|yield)$/;
   var operatorRE = /[=+\-*/%!<>&|:?]*/;
   var nameCharRE = /^[\w\u00C0-\uffff\$]+/;
-  var number = /^(\d*(\.\d*)?|0x[0-9a-f]*|0b[01]*|\d+(\.\d*)?(e|E)\d+)$/;
+
+  // modified regex from Prism: https://github.com/PrismJS/prism/blob/master/components/prism-javascript.js#L21
+  var number = /^(\b(?:(?:0[xX](?:[\dA-Fa-f](?:_[\dA-Fa-f])?)+|0[bB](?:[01](?:_[01])?)+|0[oO](?:[0-7](?:_[0-7])?)+)n?|(?:\d(?:_\d)?)+n|NaN|Infinity)\b|(?:\b(?:\d(?:_\d)?)+\.?(?:\d(?:_\d)?)*|\B\.(?:\d(?:_\d)?)+)(?:[Ee][+-]?(?:\d(?:_\d)?)+)?)/;
+
   var commentRE = /((\/\*[\s\S]*?\*\/|\/\*[\s\S]*)|(\/\/.*))/;
   var regexRE =
     /^\/((?![*+?])(?:[^\r\n\[/\\]|\\.|\[(?:[^\r\n\]\\]|\\.)*\])+)\/((?:g(?:im?|mi?)?|i(?:gm?|mg?)?|m(?:gi?|ig?)?)?)/;
@@ -79,29 +82,19 @@
       if (word) {
         var v = word[0];
         isNum = v.match(number);
-        var c = isNum && text[i + v.length] == ".";
-        prevTkn = tokens[tokens.length - 1] || {};
-        var c2 = /[\.]$/.test(prevTkn.token) && isNum;
-        if (c) {
-          v += ".";
+        prevTkn = tokens[tokens.length - 1] || emptyToken;
+        if (isNum) {
+          v = text.substring(i).match(number)[0];
+          addToken(T_NUMBER, v);
+        } else {
+          readWordToken(v);
         }
         i += v.length;
-        if (c2) {
-          v = "." + v;
-          if (prevTkn.token != ".") {
-            if (prevTkn.type == T_NUMBER) {
-              prevTkn.token += word;
-              continue;
-            } else {
-              prevTkn.token = prevTkn.token.substr(0, prevTkn.token.length - 1);
-            }
-          } else {
-            tokens.pop();
-          }
-        }
-        readWordToken(v);
-        if (c) continue;
-        w.Colorful.mergeSameTypes(tokens);
+        window.Colorful.mergeSameTypes(tokens);
+      } else if (text[i] == "." && /\d/.test(text[i+1])) {
+        var w = text.substring(i).match(number)[0];
+        addToken(T_NUMBER, w);
+        i += w.length;
       }
       if (i == len) break; // break if EOF
       prevTkn = tokens[tokens.length - 1] || emptyToken; // previous token
@@ -269,7 +262,7 @@
         addToken("OTHER", char);
         i++;
       }
-      w.Colorful.mergeSameTypes(tokens);
+      window.Colorful.mergeSameTypes(tokens);
     }
     if (char == "\n") tokens[tokens.length - 1].token += "\n"; // quick fix
     return { tokens: tokens, inputEnd: i };
@@ -326,7 +319,7 @@
       ) {
         // builtin objects word
         addToken(T_CAPITAL, word);
-      } else if (prevt.endsWith(".") || pprevt.endsWith(".")) {
+      } else if (/(\.)(\s*)$/.test(prevt) || pprevt.endsWith(".")) {
         // object property
         addToken(T_OBJECTPROP, word);
       } else {
