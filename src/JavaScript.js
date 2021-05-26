@@ -158,15 +158,7 @@
           var comment = nxt.match(commentRE)[0];
           i += comment.length;
           addToken(T_COMMENT, comment);
-        } else if (
-          char == "/" &&
-          !(
-            lastTkn.type == T_TEXT ||
-            lastTkn.type == T_OBJECTPROP ||
-            lastTkn.type == T_NUMBER
-          ) &&
-          regexRE.test(nxt)
-        ) {
+        } else if (char == "/" && !(lastTkn.type == T_TEXT ||lastTkn.type == T_OBJECTPROP ||lastTkn.type == T_NUMBER) &&  regexRE.test(nxt)) {
           // regular expression ahead
           var continueWork = true;
           if (lastTkn.type == T_COMMENT) {
@@ -195,6 +187,25 @@
             addToken(T_OPERATOR, char);
             i++;
           }
+        } else if (next2 == "=>") {
+          if (lastTkn.type == "TEXT") {
+            lastTkn.type = "ARGUMENT";
+          } else if (/\)\s*$/.test(lastTkn.token)) {
+            var initialScopeLevel = scopeTree.length;
+            var argsarr = [tokens[tokens.length-1]];
+            for (var k = tokens.length - 2; k >= 0; k--) {
+              var tk = tokens[k];
+              argsarr.push(tk);
+              if (tk.type == T_OTHER && tk.scopeLevel == initialScopeLevel) {
+                tokens.splice(k);
+                break
+              }
+            }
+            argsarr.reverse();
+            readArgumentsInTokens(argsarr, initialScopeLevel+1, false);
+          }
+          addToken(T_OPERATOR, next2);
+          i+=2;
         } else {
           //operator
           addToken(T_OPERATOR, char);
