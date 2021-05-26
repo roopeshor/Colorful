@@ -1,5 +1,5 @@
 (function (w) {
-  // RegExes 
+  // RegExes
   var KeywordRE =
     /^(await|break|case|catch|class|const|continue|debugger|default|delete|do|else|enum|export|extends|false|finally|for|function|if|implements|import|in|instanceof|interface|let|NaN|native|new|null|package|private|protected|public|return|static|super|switch|this|throw|true|try|typeof|undefined|var|void|while|with|yield)$/;
   var operatorRE = /[=+\-*/%!<>&|:?]*/;
@@ -43,7 +43,13 @@
     container.style.fontSize = cfg.fontSize + "px";
     container.innerHTML = w.Colorful.finishUp(cfg, text, markuped);
     var speed = ((text.length / 1024 / compileTime) * 1000).toFixed(3); //kb/s
-    console.log(`total code analysed: ${(text.length / 1024).toFixed(3)} kb\nfound: ${out.tokens.length} tokens\ncompile time: ${compileTime.toFixed(4)} ms\ncompile speed: ${speed} kib/s`);
+    console.log(
+      `total code analysed: ${(text.length / 1024).toFixed(3)} kb\nfound: ${
+        out.tokens.length
+      } tokens\ncompile time: ${compileTime.toFixed(
+        4
+      )} ms\ncompile speed: ${speed} kib/s`
+    );
   }
 
   /**
@@ -77,8 +83,8 @@
           v = "." + v;
           if (lastTkn.token != ".") {
             if (lastTkn.type == T_NUMBER) {
-              lastTkn.token+=word;
-              continue
+              lastTkn.token += word;
+              continue;
             } else {
               lastTkn.token = lastTkn.token.substr(0, lastTkn.token.length - 1);
             }
@@ -103,62 +109,76 @@
         // next character is a space/tab/line break
         var space = text.substring(i).match(whitespace)[0];
         if (lastTkn.token) lastTkn.token += space;
-        else addToken(T_TEXT, space)
+        else addToken(T_TEXT, space);
         i += space.length;
       } else if (char == "'" || char == '"' || char == "`") {
         addToken(T_STRING, char);
         i++;
         var str = "";
         var slashes = 0; // number of backslashes
+        var re =
+          char == "'" ? /^[^'\\]+/ : char == '"' ? /^[^"\\]+/ : /^[^`\\${]+/;
         while (i < len) {
+          str = text.substring(i).match(re);
+          if (str) {
+            addToken(T_STRING, str[0]);
+            i += str[0].length;
+            slashes = 0;
+          }
           var ch = text[i];
-          if (ch != char) { // if not the quotes
-            if (ch!="\\") slashes = 0;
-            else slashes++;
-            if (char=="`" && text.substr(i, 2) == "${") {
-              addToken(T_STRING, str);
-              str = "";
-              addToken(T_OPERATOR, "${");
-              i += 2;
-              var nxt = text.substring(i);
-              var out = tokenize(nxt,{braceUnMatch: "break" });
-              if (out.tokens.length) tokens = tokens.concat(out.tokens);
-              console.log(out.inputEnd, nxt.length)
-              i += out.inputEnd;
-              if (out.inputEnd != nxt.length) {
-                addToken(T_OPERATOR, "}");
-                i++;
-              } else if (text[i-1] == "\n") {
-                tokens[tokens.length-1].token += "\n"; // quick fix
-              }
-            } else {
-              str += ch;
-              i++;
-            }
-          } else {
-            str += ch;
+          if (ch == "\\") {
+            var slsh = text.substring(i).match(/[\\]+/)[0];
+            addToken(T_STRING, slsh);
+            slashes += slsh.length;
+            i += slsh.length;
+          } else if (ch == char) {
+            addToken(T_STRING, ch);
             i++;
-            if (slashes%2 == 0) break;
+            if (slashes % 2 == 0) break;
+          } else if (text.substr(i, 2) == "${") {
+            addToken(T_OPERATOR, "${");
+            i += 2;
+            var nxt = text.substring(i);
+            var out = tokenize(nxt, { braceUnmatch: "break" });
+            if (out.tokens.length) tokens = tokens.concat(out.tokens);
+            i += out.inputEnd;
+            if (out.inputEnd != nxt.length) {
+              addToken(T_OPERATOR, "}");
+              i++;
+            } else if (text[i - 1] == "\n") {
+              tokens[tokens.length - 1].token += "\n"; // quick fix
+            }
           }
         }
-        if (str != "") addToken(T_STRING, str);
       } else if (char.match(operatorRE)[0]) {
         var nxt = text.substring(i);
         // math operators
         if (next2 == "//" || next2 == "/*") {
-        // comment ahead
+          // comment ahead
           var comment = nxt.match(commentRE)[0];
           i += comment.length;
           addToken(T_COMMENT, comment);
-        } else if (char == "/" && !(lastTkn.type == T_TEXT || lastTkn.type == T_OBJECTPROP || lastTkn.type == T_NUMBER) && regexRE.test(nxt)) {
+        } else if (
+          char == "/" &&
+          !(
+            lastTkn.type == T_TEXT ||
+            lastTkn.type == T_OBJECTPROP ||
+            lastTkn.type == T_NUMBER
+          ) &&
+          regexRE.test(nxt)
+        ) {
           // regular expression ahead
           var continueWork = true;
           if (lastTkn.type == T_COMMENT) {
-            for (var k = tokens.length-1; k >= 0; k--) {
-              var tk = tokens[k]
+            for (var k = tokens.length - 1; k >= 0; k--) {
+              var tk = tokens[k];
               if (tk.type == T_COMMENT) {
                 continue;
-              } else if (tk.type == T_TEXT || tk.type == T_OBJECTPROP || tk.type == T_NUMBER) {
+              } else if (
+                tk.type == T_TEXT ||
+                tk.type == T_OBJECTPROP ||
+                tk.type == T_NUMBER
+              ) {
                 continueWork = false;
                 break;
               } else {
@@ -173,7 +193,7 @@
           } else {
             //operator
             addToken(T_OPERATOR, char);
-            i++;  
+            i++;
           }
         } else {
           //operator
@@ -182,73 +202,42 @@
         }
       } else if (char == "(") {
         // function name
-        var tl = tokens.length;
         var prev = lastTkn;
-        var prevt = prev.token || "";
-        var pprev = tokens[tl - 2] || emptyToken;
+        var prevt = prev.type;
+        var pprev = tokens[tokens.length - 2] || emptyToken;
+        const isFunctionClause =
+          (prev.token.substr(0, 8) == "function" && prevt == "KEY") ||
+          (pprev.token.substr(0, 8) == "function" && pprev.type == "KEY") ||
+          scopeTree[scopeTree.length - 1] == "class";
         addToken(T_OTHER, "(");
         i++;
-        scopeTree.push("paren");
-        const isFunctionClause =
-          prevt.substr(0, 8) == "function" ||
-          pprev.token.substr(0, 8) == "function" ||
-          scopeTree[scopeTree.length - 1] == "class";
-        var prevtIsCh = nameCharRE.test(prevt);
-        var pprevtIsCh = nameCharRE.test(pprev.token);
-        if (isFunctionClause) {
-          // function defnition ahead
-          // makes name of function colored to method
-          if (prev.type == T_TEXT && prevtIsCh) {
-            prev.type = T_METHOD;
-          } else if (pprev.type == T_TEXT && pprevtIsCh) {
-            pprev.type = T_METHOD;
-          }
-
+        scopeTree.push("(");
+        scope = "("
+        // makes name of function colored to method
+        if (prevt == "TEXT" || prevt == "OBJECTPROP") {
+          prev.type = T_METHOD;
+        }
+        if (isFunctionClause && next2 != "()") {
           // reads arguments
-          if (next2 != "()") {
-            var tkn = tokenize(text.substring(i), { parenUnMatch: "break" });
-            var tkns = tkn.tokens;
-            readArgumentsInTokens(tkns);
-            i += tkn.inputEnd;
-          }
-        } else if (
-          prevtIsCh &&
-          (prev.type == "TEXT" || prev.type == "OBJECTPROP") &&
-          /[\w\u00C0-\uffff$\s]+/.test((prevt.split("").reverse().join("").match(/^(\s)*[\w\u00C0-\uffff$\s]+/) || [""])[0])
-        ) {
-          //this is function calling clause
-            prev.type = T_METHOD;
+          var tkn = tokenize(text.substring(i), { parenUnmatch: "break" });
+          var tkns = tkn.tokens;
+          readArgumentsInTokens(tkns);
+          i += tkn.inputEnd;
         }
-      } else if (char == ")") {
-        if (scopeTree.length > 0) {
-          scopeTree.pop();
-        } else if (ErrHandler.parenUnMatch == "break") {
-          break;
-        }
-        addToken("OTHER", char);
-        i++;
-      } else if (char == "{") {
+      } else if (char == "{" || char == "[") {
         addToken("OTHER", char);
         i++;
         scopeTree.push(scope);
-        scope = "empty";
-      } else if (char == "}") {
-        if (scopeTree.length > 0) {
-          scopeTree.pop();
-        } else if (ErrHandler.braceUnMatch == "break") {
-          break;
+        scope = char;
+      } else if (char == "}" || char == ")" || char == "]") {
+        var handler = {
+          "}":"braceUnmatch",
+          ")":"parenUnmatch",
+          "]":"bracketUnmatch"
         }
-        addToken("OTHER", char);
-        i++;
-      } else if (char == "[") {
-        addToken("OTHER", char);
-        i++;
-        scopeTree.push(scope);
-        scope = "bracket";
-      } else if (char == "]") {
         if (scopeTree.length > 0) {
           scopeTree.pop();
-        } else if (ErrHandler.bracketUnMatch == "break") {
+        } else if (ErrHandler[handler[char]] == "break") {
           break;
         }
         addToken("OTHER", char);
@@ -259,14 +248,18 @@
       }
       w.Colorful.mergeSameTypes(tokens);
     }
-    if (char == "\n") tokens[tokens.length-1].token += "\n"; // quick fix
+    if (char == "\n") tokens[tokens.length - 1].token += "\n"; // quick fix
     return { tokens: tokens, inputEnd: i };
-    function addToken(type, token,) {
-      tokens.push({ type: type, token: token.replaceSpecHTMLChars(), scopeLevel: scopeTree.length });
+    function addToken(type, token) {
+      tokens.push({
+        type: type,
+        token: token.replaceSpecHTMLChars(),
+        scopeLevel: scopeTree.length,
+      });
     }
 
     // read arguments
-    function readArgumentsInTokens(tks, base=0, increase=true) {
+    function readArgumentsInTokens(tks, base = 0, increase = true) {
       for (var k = 0; k < tks.length; k++) {
         var tk = tks[k];
         if (
@@ -322,23 +315,23 @@
   /**
    * parse tokens to generate html string
    * @param {Array} tokens array of tokens
-   * @return {String}  
+   * @return {String}
    */
   function parse(tokens) {
     var formatted = ``;
     var d = {
-        TEXT: "name",
-        OBJECTPROP: "objprop",
-        KEY: "keyword",
-        COMMENT: "comment",
-        NUMBER: "number",
-        ARGUMENT: "argument",
-        CAPITAL: "capital",
-        METHOD: "method",
-        STRING: "string",
-        REGEX: "regex",
-        OPERATOR: "operator",
-      };
+      TEXT: "name",
+      OBJECTPROP: "objprop",
+      KEY: "keyword",
+      COMMENT: "comment",
+      NUMBER: "number",
+      ARGUMENT: "argument",
+      CAPITAL: "capital",
+      METHOD: "method",
+      STRING: "string",
+      REGEX: "regex",
+      OPERATOR: "operator",
+    };
     for (var i = 0; i < tokens.length; i++) {
       var tkn = tokens[i],
         tokenType = tkn.type;
@@ -352,8 +345,8 @@
     return formatted;
   }
 
-  w.Colorful.langs.push("JS")
-  w.Colorful.JS_Compiler = {
+  w.Colorful.langs.push("JS");
+  w.Colorful.compilers.JS = {
     compile: highlight,
     tokenize: tokenize,
     parse: parse,

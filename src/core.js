@@ -7,6 +7,7 @@
       lineHeight: 20,
     },
     langs: [], // languages
+    compilers: [], // compilers
     /*
     merges same type of consecutive tokens into
     single one to minimize tokens to parse
@@ -74,7 +75,7 @@
       var lang = langs[i];
       var codes = document.getElementsByClassName(lang + "-colorful");
       //chooses specific language compiler
-      var compiler = w.Colorful[lang + "_Compiler"];
+      var compiler = w.Colorful.compilers[lang];
       for (var k = 0; k < codes.length; k++) {
         var block = codes[k];
         var cfg = {
