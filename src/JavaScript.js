@@ -53,39 +53,47 @@
 
   /**
    * tokenize input text
-   *
-   * @param {String} text
-   * @param {Object} [ErrHandler={}]
-   * @return {Object} tokens
+   * @param {String} text text to be tokenised
+   * @param {Object} [ErrHandler={}] defines how errors should be handled.
+   * Only handles bracket/brace/paren un matches only in one way: either break and return tokens or continue.
+   * 
+   * possible values: {
+   *  breakOnBraceUnmatch: true/false,
+   *  breakOnParenUnmatch: true/false,
+   *  breakOnBracketUnmatch: true/false
+   * }
+   * @return {Object}
+   * 
+   * @example tokenize("...", { breakOnBraceUnmatch:true }) // returns tokens when brace not matches or EOF reached
    */
   function tokenize(text, ErrHandler = {}) {
     var len = text.length;
     var tokens = [],
       word = "",
-      scopeTree = [],
-      scope = "empty";
+      scopeTree = [], // list like structure defines where current tokenisation is happening
+      scope = "empty"; // recent scope
     var i = 0;
     while (i < len) {
       word = text.substring(i).match(nameCharRE);
-      var isNum, lastTkn;
+      var isNum, prevTkn;
       if (word) {
         var v = word[0];
         isNum = v.match(number);
         var c = isNum && text[i + v.length] == ".";
-        lastTkn = tokens[tokens.length - 1] || {};
-        var c2 = /[\.]$/.test(lastTkn.token) && isNum;
+        prevTkn = tokens[tokens.length - 1] || {};
+        var c2 = /[\.]$/.test(prevTkn.token) && isNum;
         if (c) {
           v += ".";
         }
         i += v.length;
         if (c2) {
           v = "." + v;
-          if (lastTkn.token != ".") {
-            if (lastTkn.type == T_NUMBER) {
-              lastTkn.token += word;
+          if (prevTkn.token != ".") {
+            if (prevTkn.type == T_NUMBER) {
+              prevTkn.token += word;
               continue;
             } else {
-              lastTkn.token = lastTkn.token.substr(0, lastTkn.token.length - 1);
+              prevTkn.token = prevTkn.token.substr(0, prevTkn.token.length - 1);
             }
           } else {
             tokens.pop();
@@ -95,26 +103,27 @@
         if (c) continue;
         w.Colorful.mergeSameTypes(tokens);
       }
-      if (i == len) break;
-      lastTkn = tokens[tokens.length - 1] || emptyToken;
-      /*
-      after matching a word there will be a non alphanumeric(and non '$') code
-      there will be something else the following code analyses that
-      */
+      if (i == len) break; // break if EOF
+      prevTkn = tokens[tokens.length - 1] || emptyToken; // previous token
+      /* after matching a word there will be a non-unicode characters (punctuations, operators, etc.) that will follow word. Following code analyses it */
       var char = text[i]; // next character
       var next2 = text.substr(i, 2); // next two characters
 
       if (whitespace.test(char)) {
-        // next character is a space/tab/line break
+        // finds next whitespace characters
         var space = text.substring(i).match(whitespace)[0];
-        if (lastTkn.token) lastTkn.token += space;
-        else addToken(T_TEXT, space);
+        if (prevTkn.token) prevTkn.token += space; // if a token exists in the list add whitespaces to it
+        else addToken(T_TEXT, space); // if there is no previous tokens
         i += space.length;
       } else if (char == "'" || char == '"' || char == "`") {
+        // string ahead
+        
         addToken(T_STRING, char);
         i++;
+
         var str = "";
         var slashes = 0; // number of backslashes
+        //regular expression that is used to match all characters except the string determiner and backslashes 
         var re =
           char == "'" ? /^[^'\\]+/ : char == '"' ? /^[^"\\]+/ : /^[^`\\${]+/;
         while (i < len) {
@@ -133,15 +142,18 @@
           } else if (ch == char) {
             addToken(T_STRING, ch);
             i++;
-            if (slashes % 2 == 0) break;
+            if (slashes % 2 == 0) break; // even number of #backslashes means string character is not escaped
           } else if (text.substr(i, 2) == "${") {
-            addToken(T_OPERATOR, "${");
+            // only for multiline string
+            // string interpolation ahead
+            addToken(T_OPERATOR, "${"); // adds `${` as operator
             i += 2;
-            var nxt = text.substring(i);
-            var out = tokenize(nxt, { braceUnmatch: "break" });
+            var nxt = text.substring(i); // text left to parse except `${`
+            var out = tokenize(nxt, { breakOnBraceUnmatch: true }); // tokenises code left 
             if (out.tokens.length) tokens = tokens.concat(out.tokens);
             i += out.inputEnd;
             if (out.inputEnd != nxt.length) {
+              // if tokenization was completed due to an unmatched brace add `}` after everything
               addToken(T_OPERATOR, "}");
               i++;
             } else if (text[i - 1] == "\n") {
@@ -151,16 +163,17 @@
         }
       } else if (char.match(operatorRE)[0]) {
         var nxt = text.substring(i);
-        // math operators
         if (next2 == "//" || next2 == "/*") {
           // comment ahead
           var comment = nxt.match(commentRE)[0];
           i += comment.length;
           addToken(T_COMMENT, comment);
-        } else if (char == "/" && !(lastTkn.type == T_TEXT ||lastTkn.type == T_OBJECTPROP ||lastTkn.type == T_NUMBER) &&  regexRE.test(nxt)) {
+        } else if (char == "/" && !(prevTkn.type == T_TEXT ||prevTkn.type == T_OBJECTPROP ||prevTkn.type == T_NUMBER) &&  regexRE.test(nxt)) {
           // regular expression ahead
-          var continueWork = true;
-          if (lastTkn.type == T_COMMENT) {
+          var regExAhead = true;
+          if (prevTkn.type == T_COMMENT) {
+            /* if previous one was comment it checks backward if before the comment(s) was text/object property/ number.
+               if that is true ahead is not a regex*/
             for (var k = tokens.length - 1; k >= 0; k--) {
               var tk = tokens[k];
               if (tk.type == T_COMMENT) {
@@ -170,14 +183,14 @@
                 tk.type == T_OBJECTPROP ||
                 tk.type == T_NUMBER
               ) {
-                continueWork = false;
+                regExAhead = false;
                 break;
               } else {
                 break;
               }
             }
           }
-          if (continueWork) {
+          if (regExAhead) {
             var re = nxt.match(regexRE)[0];
             addToken(T_REGEX, re);
             i += re.length;
@@ -187,9 +200,9 @@
             i++;
           }
         } else if (next2 == "=>") {
-          if (lastTkn.type == "TEXT") {
-            lastTkn.type = "ARGUMENT";
-          } else if (/\)\s*$/.test(lastTkn.token)) {
+          if (prevTkn.type == "TEXT") {
+            prevTkn.type = "ARGUMENT";
+          } else if (/\)\s*$/.test(prevTkn.token)) {
             var initialScopeLevel = scopeTree.length;
             var argsarr = [tokens[tokens.length-1]];
             for (var k = tokens.length - 2; k >= 0; k--) {
@@ -212,7 +225,7 @@
         }
       } else if (char == "(") {
         // function name
-        var prev = lastTkn;
+        var prev = prevTkn;
         var prevt = prev.type;
         var pprev = tokens[tokens.length - 2] || emptyToken;
         const isFunctionClause =
@@ -229,7 +242,7 @@
         }
         if (isFunctionClause && next2 != "()") {
           // reads arguments
-          var tkn = tokenize(text.substring(i), { parenUnmatch: "break" });
+          var tkn = tokenize(text.substring(i), { breakOnParenUnmatch: true });
           var tkns = tkn.tokens;
           readArgumentsInTokens(tkns);
           i += tkn.inputEnd;
@@ -241,13 +254,13 @@
         scope = char;
       } else if (char == "}" || char == ")" || char == "]") {
         var handler = {
-          "}":"braceUnmatch",
-          ")":"parenUnmatch",
-          "]":"bracketUnmatch"
+          "}":"breakOnBraceUnmatch",
+          ")":"breakOnParenUnmatch",
+          "]":"breakOnBracketUnmatch"
         }
         if (scopeTree.length > 0) {
           scopeTree.pop();
-        } else if (ErrHandler[handler[char]] == "break") {
+        } else if (ErrHandler[handler[char]]) {
           break;
         }
         addToken("OTHER", char);
@@ -287,7 +300,7 @@
     // finds the type of word given
     function readWordToken(word) {
       var pprevt = tokens[tokens.length - 2]?.token || "";
-      var prevt = lastTkn.token || "";
+      var prevt = prevTkn.token || "";
       if (
         KeywordRE.test(word) || // global keywords
         (word == "arguments" &&
