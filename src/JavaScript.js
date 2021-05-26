@@ -273,7 +273,7 @@
       for (var k = 0; k < tks.length; k++) {
         var tk = tks[k];
         if (
-          tk.type == T_TEXT &&
+          (tk.type == T_TEXT || tk.type == T_CAPITAL) &&
           tk.scopeLevel == base &&
           tks[k - 1]?.type != T_OPERATOR
         ) {
