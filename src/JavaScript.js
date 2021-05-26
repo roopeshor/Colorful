@@ -34,13 +34,12 @@
    * @param {HTMLElement} container
    * @param {Object} cfg
    */
-  function highlight(container, cfg) {
+  function highlight(container, cfg=w.Colorful.config) {
     var text = container.innerText;
     var d1 = w.performance.now();
     var out = tokenize(text);
-    var markuped = parse(out.tokens, cfg.lineHeight);
+    var markuped = parse(out.tokens);
     var compileTime = w.performance.now() - d1;
-    container.style.fontSize = cfg.fontSize + "px";
     container.innerHTML = w.Colorful.finishUp(cfg, text, markuped);
     var speed = ((text.length / 1024 / compileTime) * 1000).toFixed(3); //kb/s
     console.log(
@@ -55,9 +54,9 @@
   /**
    * tokenize input text
    *
-   * @param {string} text
+   * @param {String} text
    * @param {Object} [ErrHandler={}]
-   * @return {Array} tokens
+   * @return {Object} tokens
    */
   function tokenize(text, ErrHandler = {}) {
     var len = text.length;

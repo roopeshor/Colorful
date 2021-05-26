@@ -2,12 +2,10 @@
   w.Colorful = {
     config: {
       tabIndex: 4,
-      fontSize: 16, // in px
       enableLineNumbering: true,
-      lineHeight: 20,
     },
     langs: [], // languages
-    compilers: [], // compilers
+    compilers: {}, // compilers
     /*
     merges same type of consecutive tokens into
     single one to minimize tokens to parse
@@ -80,8 +78,6 @@
         var block = codes[k];
         var cfg = {
           tabIndex: block.getAttribute("tabindex") || config.tabIndex,
-          fontSize: block.getAttribute("fontsize") || config.fontSize,
-          lineHeight: block.getAttribute("lineheight") || config.lineHeight,
           enableLineNumbering: block.hasAttribute("lineNumbering"),
         };
         compiler.compile(codes[k], cfg);
