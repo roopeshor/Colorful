@@ -46,11 +46,11 @@
     container.innerHTML = w.Colorful.finishUp(cfg, text, markuped);
     var speed = ((text.length / 1024 / compileTime) * 1000).toFixed(3); //kb/s
     console.log(
-      `total code analysed: ${(text.length / 1024).toFixed(3)} kb\nfound: ${
+      `total code analysed: ${(text.length / 1024).toFixed(3)} KiB\nfound: ${
         out.tokens.length
       } tokens\ncompile time: ${compileTime.toFixed(
         4
-      )} ms\ncompile speed: ${speed} kib/s`
+      )} ms\ncompile speed: ${speed} KiB/s`
     );
   }
 
@@ -156,32 +156,18 @@
         }
       } else if (char.match(operatorRE)[0]) {
         var nxt = text.substring(i);
+        var prevt = prevTkn.type;
         if (next2 == "//" || next2 == "/*") {
           // comment ahead
           var comment = nxt.match(commentRE)[0];
           i += comment.length;
           addToken(T_COMMENT, comment);
-        } else if (char == "/" && !(prevTkn.type == T_TEXT ||prevTkn.type == T_OBJECTPROP ||prevTkn.type == T_NUMBER) &&  regexRE.test(nxt)) {
+        } else if (char == "/" && !(prevt == T_TEXT ||prevt == T_OBJECTPROP ||prevt == T_NUMBER) &&  regexRE.test(nxt)) {
           // regular expression ahead
           var regExAhead = true;
-          if (prevTkn.type == T_COMMENT) {
-            /* if previous one was comment it checks backward if before the comment(s) was text/object property/ number.
-               if that is true ahead is not a regex*/
-            for (var k = tokens.length - 1; k >= 0; k--) {
-              var tk = tokens[k];
-              if (tk.type == T_COMMENT) {
-                continue;
-              } else if (
-                tk.type == T_TEXT ||
-                tk.type == T_OBJECTPROP ||
-                tk.type == T_NUMBER
-              ) {
-                regExAhead = false;
-                break;
-              } else {
-                break;
-              }
-            }
+          var tk = tokens[tokens.length-2]
+          if (prevTkn.type == T_COMMENT && (tk == T_TEXT || tk.type == T_OBJECTPROP || tk.type == T_NUMBER)) {
+            regExAhead = false;
           }
           if (regExAhead) {
             var re = nxt.match(regexRE)[0];

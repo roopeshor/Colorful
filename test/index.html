@@ -20,7 +20,7 @@
     <div class="container">
       <div class="block">
         <p>Data types</p>
-        <code class="JS-colorful colorful">var datatypes = {
+        <pre class="JS-colorful colorful">var datatypes = {
   numbers: [
     102,
     0.45,
@@ -55,27 +55,22 @@
     'single quote',
     `multiline
     string`,
-    `is string
-    interpolation supported? ${1 != 0}`
+    `string
+    interpolation ${1 != 0}`
   ]
 }
-// single line comment 
-/*
-multiline
-comment
-*/
-var DTlength = datatypes.length</code>
+re = /*'"/</pre>
       </div>
       <div class="block">
         <p>The source code of this project: </p>
-        <div class="JS-colorful colorful">(function (w) {
+        <pre class="JS-colorful colorful">(function (w) {
   // RegExes
   var KeywordRE =
     /^(await|break|case|catch|class|const|continue|debugger|default|delete|do|else|enum|export|extends|false|finally|for|function|if|implements|import|in|instanceof|interface|let|native|new|null|package|private|protected|public|return|static|super|switch|this|throw|true|try|typeof|undefined|var|void|while|with|yield)$/;
   var operatorRE = /[=+\-*/%!&lt;>&|:?]*/;
   var nameCharRE = /^[\w\u00C0-\uffff\$]+/;
 
-  // modified regex from Prism: https://github.com/PrismJS/prism/blob/master/components/prism-javascript.js#L21
+  //slightly modified regex from Prism: https://github.com/PrismJS/prism/blob/master/components/prism-javascript.js#L21
   var number = /^(\b(?:(?:0[xX](?:[\dA-Fa-f](?:_[\dA-Fa-f])?)+|0[bB](?:[01](?:_[01])?)+|0[oO](?:[0-7](?:_[0-7])?)+)n?|(?:\d(?:_\d)?)+n|NaN|Infinity)\b|(?:\b(?:\d(?:_\d)?)+\.?(?:\d(?:_\d)?)*|\B\.(?:\d(?:_\d)?)+)(?:[Ee][+-]?(?:\d(?:_\d)?)+)?)/;
 
   var commentRE = /((\/\*[\s\S]*?\*\/|\/\*[\s\S]*)|(\/\/.*))/;
@@ -437,7 +432,7 @@ var DTlength = datatypes.length</code>
     tokenize: tokenize,
     parse: parse,
   };
-})(window);</div>
+})(window);</pre>
       </div>
   </body>
 </html>

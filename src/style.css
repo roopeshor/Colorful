@@ -9,6 +9,7 @@
   line-height: normal;
   outline: none;
   white-space: pre;
+  
   overflow: auto;
 }
 
@@ -37,7 +38,7 @@
   color:#ffa601;
 }
 .colorful-code .method{
-  color:#80cc43;
+  color:#44c4f8;
 }
 .colorful-code .argument{
   color:#ff983e;
