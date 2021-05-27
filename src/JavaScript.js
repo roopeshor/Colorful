@@ -6,7 +6,8 @@
   var nameCharRE = /^[\w\u00C0-\uffff\$]+/;
 
   // modified regex from Prism: https://github.com/PrismJS/prism/blob/master/components/prism-javascript.js#L21
-  var number = /^(\b(?:(?:0[xX](?:[\dA-Fa-f](?:_[\dA-Fa-f])?)+|0[bB](?:[01](?:_[01])?)+|0[oO](?:[0-7](?:_[0-7])?)+)n?|(?:\d(?:_\d)?)+n|NaN|Infinity)\b|(?:\b(?:\d(?:_\d)?)+\.?(?:\d(?:_\d)?)*|\B\.(?:\d(?:_\d)?)+)(?:[Ee][+-]?(?:\d(?:_\d)?)+)?)/;
+  var number =
+    /^(\b(?:(?:0[xX](?:[\dA-Fa-f](?:_[\dA-Fa-f])?)+|0[bB](?:[01](?:_[01])?)+|0[oO](?:[0-7](?:_[0-7])?)+)n?|(?:\d(?:_\d)?)+n|NaN|Infinity)\b|(?:\b(?:\d(?:_\d)?)+\.?(?:\d(?:_\d)?)*|\B\.(?:\d(?:_\d)?)+)(?:[Ee][+-]?(?:\d(?:_\d)?)+)?)/;
 
   var commentRE = /((\/\*[\s\S]*?\*\/|\/\*[\s\S]*)|(\/\/.*))/;
   var regexRE =
@@ -31,13 +32,12 @@
   // an empty token
   var emptyToken = { type: "", token: "" };
 
-  // default configurations for output
   /**
    * combines tokenizer and parser
    * @param {HTMLElement} container
    * @param {Object} cfg
    */
-  function highlight(container, cfg=w.Colorful.config) {
+  function highlight(container, cfg = w.Colorful.config) {
     var text = container.innerText;
     var d1 = w.performance.now();
     var out = tokenize(text);
@@ -59,14 +59,14 @@
    * @param {String} text text to be tokenised
    * @param {Object} [ErrHandler={}] defines how errors should be handled.
    * Only handles bracket/brace/paren un matches only in one way: either break and return tokens or continue.
-   * 
+   *
    * possible values: {
    *  breakOnBraceUnmatch: true/false,
    *  breakOnParenUnmatch: true/false,
    *  breakOnBracketUnmatch: true/false
    * }
    * @return {Object}
-   * 
+   *
    * @example tokenize("...", { breakOnBraceUnmatch:true }) // returns tokens when brace not matches or EOF reached
    */
   function tokenize(text, ErrHandler = {}) {
@@ -91,7 +91,7 @@
         }
         i += v.length;
         window.Colorful.mergeSameTypes(tokens);
-      } else if (text[i] == "." && /\d/.test(text[i+1])) {
+      } else if (text[i] == "." && /\d/.test(text[i + 1])) {
         var w = text.substring(i).match(number)[0];
         addToken(T_NUMBER, w);
         i += w.length;
@@ -105,18 +105,19 @@
       if (whitespace.test(char)) {
         // finds next whitespace characters
         var space = text.substring(i).match(whitespace)[0];
-        if (prevTkn.token) prevTkn.token += space; // if a token exists in the list add whitespaces to it
+        if (prevTkn.token) prevTkn.token += space;
+        // if a token exists in the list add whitespaces to it
         else addToken(T_TEXT, space); // if there is no previous tokens
         i += space.length;
       } else if (char == "'" || char == '"' || char == "`") {
         // string ahead
-        
+
         addToken(T_STRING, char);
         i++;
 
         var str = "";
         var slashes = 0; // number of backslashes
-        //regular expression that is used to match all characters except the string determiner and backslashes 
+        //regular expression that is used to match all characters except the string determiner and backslashes
         var re =
           char == "'" ? /^[^'\\]+/ : char == '"' ? /^[^"\\]+/ : /^[^`\\${]+/;
         while (i < len) {
@@ -142,7 +143,7 @@
             addToken(T_OPERATOR, "${"); // adds `${` as operator
             i += 2;
             var nxt = text.substring(i); // text left to parse except `${`
-            var out = tokenize(nxt, { breakOnBraceUnmatch: true }); // tokenises code left 
+            var out = tokenize(nxt, { breakOnBraceUnmatch: true }); // tokenises code left
             if (out.tokens.length) tokens = tokens.concat(out.tokens);
             i += out.inputEnd;
             if (out.inputEnd != nxt.length) {
@@ -162,11 +163,18 @@
           var comment = nxt.match(commentRE)[0];
           i += comment.length;
           addToken(T_COMMENT, comment);
-        } else if (char == "/" && !(prevt == T_TEXT ||prevt == T_OBJECTPROP ||prevt == T_NUMBER) &&  regexRE.test(nxt)) {
+        } else if (
+          char == "/" &&
+          !(prevt == T_TEXT || prevt == T_OBJECTPROP || prevt == T_NUMBER) &&
+          regexRE.test(nxt)
+        ) {
           // regular expression ahead
           var regExAhead = true;
-          var tk = tokens[tokens.length-2]
-          if (prevTkn.type == T_COMMENT && (tk == T_TEXT || tk.type == T_OBJECTPROP || tk.type == T_NUMBER)) {
+          var tk = tokens[tokens.length - 2].type;
+          if (
+            prevTkn.type == T_COMMENT &&
+            (tk == T_TEXT || tk == T_OBJECTPROP || tk == T_NUMBER)
+          ) {
             regExAhead = false;
           }
           if (regExAhead) {
@@ -183,20 +191,20 @@
             prevTkn.type = "ARGUMENT";
           } else if (/\)\s*$/.test(prevTkn.token)) {
             var initialScopeLevel = scopeTree.length;
-            var argsarr = [tokens[tokens.length-1]];
+            var argsarr = [tokens[tokens.length - 1]];
             for (var k = tokens.length - 2; k >= 0; k--) {
               var tk = tokens[k];
               argsarr.push(tk);
               if (tk.type == T_OTHER && tk.scopeLevel == initialScopeLevel) {
                 tokens.splice(k);
-                break
+                break;
               }
             }
             argsarr.reverse();
-            readArgumentsInTokens(argsarr, initialScopeLevel+1, false);
+            readArgumentsInTokens(argsarr, initialScopeLevel + 1, false);
           }
           addToken(T_OPERATOR, next2);
-          i+=2;
+          i += 2;
         } else {
           //operator
           addToken(T_OPERATOR, char);
@@ -214,7 +222,7 @@
         addToken(T_OTHER, "(");
         i++;
         scopeTree.push("(");
-        scope = "("
+        scope = "(";
         // makes name of function colored to method
         if (prevt == "TEXT" || prevt == "OBJECTPROP") {
           prev.type = T_METHOD;
@@ -233,10 +241,10 @@
         scope = char;
       } else if (char == "}" || char == ")" || char == "]") {
         var handler = {
-          "}":"breakOnBraceUnmatch",
-          ")":"breakOnParenUnmatch",
-          "]":"breakOnBracketUnmatch"
-        }
+          "}": "breakOnBraceUnmatch",
+          ")": "breakOnParenUnmatch",
+          "]": "breakOnBracketUnmatch",
+        };
         if (scopeTree.length > 0) {
           scopeTree.pop();
         } else if (ErrHandler[handler[char]]) {
@@ -296,8 +304,6 @@
           scope = word;
         }
         addToken(T_KEY, word);
-      } else if (number.test(word)) {
-        addToken(T_NUMBER, word);
       } else if (
         builtInObject.test(word) &&
         !/^(function|var|const|let)/.test(prevt) &&
