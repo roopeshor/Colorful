@@ -22,38 +22,38 @@
   margin-left: 0;
 }
 
-.colorful-code .string {
+.colorful .string {
   color:#1cca41;
 }
-.colorful-code .keyword {
+.colorful .keyword {
   color:#c678dd;
 }
-.colorful-code .comment{
+.colorful .comment{
   color:#777;
 }
-.colorful-code .operator{
+.colorful .operator{
   color:#1598a7;
 }
-.colorful-code .number{
+.colorful .number{
   color:#ffa601;
 }
-.colorful-code .method{
+.colorful .method{
   color:#44c4f8;
 }
-.colorful-code .argument{
+.colorful .argument{
   color:#ff983e;
 }
-.colorful-code .regex{
+.colorful .regex{
   color:#f7aa67;
 }
-.colorful-code .object{
+.colorful .object{
   color:#e28306;
 }
-.colorful-code .capital{
+.colorful .capital{
   color:#3cbef2;
   font-style: italic;
 }
-.colorful-code .objprop {
+.colorful .objprop {
   color:#e9e482;
 }
 .colorful-numberRow {

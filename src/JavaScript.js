@@ -165,12 +165,12 @@
           addToken(T_COMMENT, comment);
         } else if (
           char == "/" &&
-          !(prevt == T_TEXT || prevt == T_OBJECTPROP || prevt == T_NUMBER) &&
+          !((prevt == T_TEXT && !/^\s+$/.test(prevTkn.token)) || prevt == T_OBJECTPROP || prevt == T_NUMBER) &&
           regexRE.test(nxt)
         ) {
           // regular expression ahead
           var regExAhead = true;
-          var tk = tokens[tokens.length - 2].type;
+          var tk = tokens[tokens.length - 2]?.type;
           if (
             prevTkn.type == T_COMMENT &&
             (tk == T_TEXT || tk == T_OBJECTPROP || tk == T_NUMBER)
@@ -311,7 +311,7 @@
       ) {
         // builtin objects word
         addToken(T_CAPITAL, word);
-      } else if (/(\.)(\s*)$/.test(prevt) || pprevt.endsWith(".")) {
+      } else if (/(\.)(\s*)$/.test(prevt)) {
         // object property
         addToken(T_OBJECTPROP, word);
       } else {

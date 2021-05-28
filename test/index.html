@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Editor</title>
-    <link rel="stylesheet" href="../src/style.css" />
+    <link rel="stylesheet" href="../dist/style.css" />
     <link rel="stylesheet" href="./myStyle.css" />
     <!-- <script src="https://cdn.jsdelivr.net/gh/Roopesh2/Colorful@master/src/core.js" defer></script>
     <script src="https://cdn.jsdelivr.net/gh/Roopesh2/Colorful@master/src/JavaScript.js" defer></script> -->
@@ -20,49 +20,9 @@
     <p>A JavaScript library that higlights JavaScript codes</p>
     <p>Examples:</p>
     <div class="container">
-      <div class="block">
-        <p>Test. Add your code inside pre tag in 23rd line in html code</p>
-        <pre class="JS-colorful colorful">var datatypes = {
-  numbers: [
-    102,
-    0.45,
-    0xff2,
-    0b1001,
-    0xff_f2,
-    0b10_011110_1101,
-    1e34,
-    .1e34,
-    0.3E2,
-    .455,
-    .34e3,
-    .24e-3,
-    24_34E-3,
-    24_43.3_454_566,
-    24_433_454_566,
-    24_433_454_566n,
-    24455435893792339433454566n
-  ],
-  builtInObjects: [
-    String, Buffer, Number,
-    Error // ...
-  ],
-  regexp : [
-    /abc/,
-    /[=+\-*/%!<>&|:?]*/,
-    /^(\b(?:(?:0[xX](?:[\dA-Fa-f](?:_[\dA-Fa-f])?)+|0[bB](?:[01](?:_[01])?)+|0[oO](?:[0-7](?:_[0-7])?)+)n?|(?:\d(?:_\d)?)+n|NaN|Infinity)\b|(?:\b(?:\d(?:_\d)?)+\.?(?:\d(?:_\d)?)*|\B\.(?:\d(?:_\d)?)+)(?:[Ee][+-]?(?:\d(?:_\d)?)+)?)/,// number regex
-    /[w+]/
-  ],
-  string: [
-    "hello",
-    'single quote',
-    `multiline
-    string`,
-    `string
-    interpolation ${1 != 0}`
-  ]
-}
-re = 4/*'*//*sdfj*//2/6
-re = /*'*//*sdfj*//2/6</pre>
+      <div class="b1">
+        <pre class="JS-colorful colorful" id="editor-output">/[]/</pre>
+        <textarea id="editor-active" placeholder="Paste your code here" spellcheck="false"></textarea>
       </div>
       <div class="block">
         <p>The source code of this project with line numbers: </p>
@@ -432,5 +392,6 @@ re = /*'*//*sdfj*//2/6</pre>
     };
   })(window);</pre>
       </div>
+    </div>
   </body>
 </html>
