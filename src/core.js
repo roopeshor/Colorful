@@ -65,7 +65,7 @@
   /**
    * highlight all languages on page loads
    */
-  w.onload = function () {
+  w.addEventListener("load", function () {
     var langs = w.Colorful.langs,
       config = w.Colorful.config;
     for (var i = 0; i < langs.length; i++) {
@@ -82,5 +82,5 @@
         compiler.compile(codes[k], cfg);
       }
     }
-  };
+  });
 })(window);

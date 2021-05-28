@@ -21,7 +21,7 @@
     <p>Examples:</p>
     <div class="container">
       <div class="b1">
-        <pre class="JS-colorful colorful" id="editor-output">/[]/</pre>
+        <pre class="JS-colorful colorful" id="editor-output"></pre>
         <textarea id="editor-active" placeholder="Paste your code here" spellcheck="false"></textarea>
       </div>
       <div class="block">
@@ -390,24 +390,5 @@
 </pre>
       </div>
     </div>
-    <script>
-      window.onload = function () {
-        const $ = el => document.querySelector(el);
-        var active = $("#editor-active");
-        var output = $("#editor-output");
-        console.log("d")
-        const J = Colorful.compilers.JS;
-        active.onkeyup = (evt) => {
-            evt.preventDefault();
-            output.scroll(active.scrollTop, active.scrollLeft);
-            output.innerHTML = J.parse(J.tokenize(evt.target.value).tokens);
-        }
-
-        active.onscroll = (evt) => {
-            output.scroll(active.scrollTop, active.scrollLeft);
-        }
-        console.log("d")
-      }
-      </script>
   </body>
 </html>

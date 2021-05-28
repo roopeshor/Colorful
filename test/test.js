@@ -1,13 +1,16 @@
-const $ = el => document.querySelector(el);
-const J = Colorful.compilers.JS;
-var active = $("#editor-active");
-var output = $("#editor-output");
-active.onkeyup = (evt) => {
-  evt.preventDefault();
-  output.scroll(active.scrollTop, active.scrollLeft);
-  output.innerHTML = J.parse(J.tokenize(evt.target.value).tokens);
-}
+window.addEventListener("load", () => {
+  var $ = el => document.querySelector(el);
+  var active = $("#editor-active");
+  var output = $("#editor-output");
+  active.onkeyup = (evt) => {
+      evt.preventDefault();
+      output.scroll(active.scrollTop, active.scrollLeft);
+      var vl = evt.target.value
+      var tkns = Colorful.compilers.JS.tokenize(vl).tokens
+      output.innerHTML = Colorful.compilers.JS.parse(tkns);
+  }
 
-active.onscroll = (evt) => {
-  output.scroll(active.scrollTop, active.scrollLeft);
-}
+  active.onscroll = (evt) => {
+      output.scroll(active.scrollTop, active.scrollLeft);
+  }
+});
