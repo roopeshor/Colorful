@@ -286,7 +286,6 @@
 
     // finds the type of word given
     function readWordToken(word) {
-      var pprevt = tokens[tokens.length - 2]?.token || "";
       var prevt = prevTkn.token || "";
       if (
         KeywordRE.test(word) || // global keywords
