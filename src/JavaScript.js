@@ -263,10 +263,8 @@
         };
         if (scopeTree.length > 0) {
           if (char == "}" && argScope.length && scopeTree[scopeTree.length-1] == "function") {
-            // if (argNames[0] == "tokens") debugger
             argNames.splice(argScope[argScope.length-2]);
             argScope.pop();
-            // console.log(argNames, argScope)
           }
           scopeTree.pop();
         } else if (ErrHandler[handler[char]]) {
@@ -307,7 +305,6 @@
       }
       tokens = tokens.concat(tks);
       if (nos) argScope.push(nos + (argScope[argScope.length-1] || 0))
-      console.log(argNames, argScope)
       scope = "function";
     }
 
