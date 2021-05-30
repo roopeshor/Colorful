@@ -3,7 +3,7 @@
   margin: 5px;
   padding: 5px;
   resize: both;
-  background-color: #152521;
+  background-color: #101515;
   color: #fff;
   font-family: monospace;
   line-height: normal;
@@ -20,6 +20,7 @@
   width: 100%;
   height: 100%;
   margin-left: 0;
+  tab-size: 2;
 }
 
 .colorful .string {
@@ -63,5 +64,5 @@
   text-align: right;
   width: min-content;
   border-right: 1px solid #666;
-  color: #888;
+  color: #858585;
 }

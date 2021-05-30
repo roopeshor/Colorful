@@ -1,7 +1,6 @@
 (function (w) {
   w.Colorful = {
     config: {
-      tabIndex: 2,
       enableLineNumbering: true,
     },
     langs: [], // languages
@@ -33,18 +32,11 @@
           if (i < lineCount) complete += "\n";
         }
         complete +=
-          '</pre></td><td><code class="colorful-code" tabindex=' +
-          cfg.tabIndex +
-          ">" +
+          '</pre></td><td><code class="colorful-code">' +
           markuped +
           "</code></td></tr></table>";
       } else {
-        complete =
-          '<code class="colorful-code" tabindex=' +
-          cfg.tabIndex +
-          ">" +
-          markuped +
-          "</code>";
+        complete = '<code class="colorful-code">' + markuped + "</code>";
       }
       return complete;
     },
@@ -58,8 +50,7 @@
    * @returns string replacing some characters
    */
   String.prototype.replaceSpecHTMLChars = function () {
-    return this.replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;");
+    return this.replace(/&/g, "&amp;").replace(/</g, "&lt;");
   };
 
   /**
@@ -76,8 +67,7 @@
       for (var k = 0; k < codes.length; k++) {
         var block = codes[k];
         var cfg = {
-          tabIndex: block.getAttribute("tabindex") || config.tabIndex,
-          enableLineNumbering: block.hasAttribute("lineNumbering"),
+          enableLineNumbering: block.hasAttribute("lineNumbering")
         };
         compiler.compile(codes[k], cfg);
       }

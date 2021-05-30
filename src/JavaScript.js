@@ -74,7 +74,9 @@
     var tokens = [],
       word = "",
       scopeTree = [], // list like structure defines where current tokenisation is happening
-      scope = "empty"; // recent scope
+      argNames = [], // list of argument names
+      argScope = [], // cumulated scope number of arguments
+      scope = ""; // recent scope
     var i = 0;
     while (i < len) {
       word = text.substring(i).match(nameCharRE);
@@ -187,27 +189,41 @@
             i++;
           }
         } else if (next2 == "=>") {
+          // arrow expression
           if (prevTkn.type == "TEXT") {
+            /* highlights single argument
+              arg => {...}
+              ^^^
+            */
             prevTkn.type = "ARGUMENT";
-          } else if (/\)\s*$/.test(prevTkn.token)) {
-            var initialScopeLevel = scopeTree.length;
-            var argsarr = [tokens[tokens.length - 1]];
+            argNames.push(prevTkn.token.trim()); // trim the token to et arguments name
+            argScope.push((argScope[argScope.length - 1] || 0) + 1);
+            scope = "function"; // after this should be a function
+          } else if (/\)\s*$/.test(prevTkn.token)) { 
+            /* reads multiple arguments
+              (arg1, arg2, argn) => {...}
+               ^^^^  ^^^^  ^^^^
+            */
+            var initialScopeLevel = scopeTree.length; // current scope
+            var toReadArray = [tokens[tokens.length - 1]]; // array of tokens to read
             for (var k = tokens.length - 2; k >= 0; k--) {
               var tk = tokens[k];
-              argsarr.push(tk);
+              toReadArray.push(tk);
               if (tk.type == T_OTHER && tk.scopeLevel == initialScopeLevel) {
+                // reached `(`
                 tokens.splice(k);
                 break;
               }
             }
-            argsarr.reverse();
-            readArgumentsInTokens(argsarr, initialScopeLevel + 1, false);
+            // reverse the array
+            toReadArray.reverse();
+            // reads arguments
+            readArgumentsInTokens(toReadArray, initialScopeLevel+1);
           }
-          addToken(T_OPERATOR, next2);
+          addToken(T_OPERATOR, next2); // add `=>` to tokens
           i += 2;
         } else {
-          //operator
-          addToken(T_OPERATOR, char);
+          addToken(T_OPERATOR, char); //regular operator
           i++;
         }
       } else if (char == "(") {
@@ -246,6 +262,12 @@
           "]": "breakOnBracketUnmatch",
         };
         if (scopeTree.length > 0) {
+          if (char == "}" && argScope.length && scopeTree[scopeTree.length-1] == "function") {
+            // if (argNames[0] == "tokens") debugger
+            argNames.splice(argScope[argScope.length-2]);
+            argScope.pop();
+            // console.log(argNames, argScope)
+          }
           scopeTree.pop();
         } else if (ErrHandler[handler[char]]) {
           break;
@@ -269,7 +291,8 @@
     }
 
     // read arguments
-    function readArgumentsInTokens(tks, base = 0, increase = true) {
+    function readArgumentsInTokens(tks, base = 0) {
+      var nos = 0;
       for (var k = 0; k < tks.length; k++) {
         var tk = tks[k];
         if (
@@ -277,11 +300,15 @@
           tk.scopeLevel == base &&
           tks[k - 1]?.type != T_OPERATOR
         ) {
+          nos++
           tk.type = T_ARGUMENT;
+          argNames.push(tk.token.trim());
         }
-        if (increase) tk.scopeLevel++;
       }
       tokens = tokens.concat(tks);
+      if (nos) argScope.push(nos + (argScope[argScope.length-1] || 0))
+      console.log(argNames, argScope)
+      scope = "function";
     }
 
     // finds the type of word given
@@ -300,7 +327,7 @@
             word
           )
         ) {
-          scope = word;
+          scope = word.trim();
         }
         addToken(T_KEY, word);
       } else if (
@@ -313,6 +340,8 @@
       } else if (/(\.)(\s*)$/.test(prevt)) {
         // object property
         addToken(T_OBJECTPROP, word);
+      } else if (argNames.indexOf(word.trim()) > -1) {
+        addToken(T_ARGUMENT, word);
       } else {
         addToken(T_TEXT, word);
       }
