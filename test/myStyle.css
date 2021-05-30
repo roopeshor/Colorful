@@ -4,9 +4,7 @@ html, body {
   background-color: #38618a;
   color: white;
 }
-body {
-  /* display: none; */
-}
+
 .container {
   height: 100%;
   width: 100%;
@@ -17,6 +15,7 @@ body {
   border: 1px solid #222;
   padding: 5px;
 }
+
 .b1 {
   position: relative;
   margin: 0;
@@ -41,6 +40,7 @@ body {
 #editor-output {
   overflow: hidden;
 }
+
 #editor-active {
   overflow: scroll;
   white-space: pre;
