@@ -3,11 +3,9 @@
     config: {
       enableLineNumbering: true,
     },
-    langs: [], // languages
-    compilers: {}, // compilers
-    /*
-    merges same type of consecutive tokens into
-    single one to minimize tokens to parse
+    tokenizers: {}, // tokenizers
+    /** merges same type of consecutive tokens into
+     * single one to minimize tokens to parse
     */
     mergeSameTypes: function (tokens) {
       var tl = tokens.length;
@@ -40,6 +38,62 @@
       }
       return complete;
     },
+
+    /**
+     * combines tokenizer and parser
+     * @param {HTMLElement} container
+     * @param {Object} cfg
+    */
+    compile: function (container, cfg, lang) {
+      var text = container.innerText,
+        tokenize = this.tokenizers[lang],
+        time = window.performance.now(),
+        out = tokenize(text),
+        markuped = this.parse(out.tokens);
+      time = window.performance.now() - time;
+      container.innerHTML = w.Colorful.finishUp(cfg, text, markuped);
+      var speed = ((text.length / 1024 / time) * 1000).toFixed(3); //kb/s
+      console.log(
+        `total code analysed: ${(text.length / 1024).toFixed(3)} KiB\nfound: ${
+          out.tokens.length
+        } tokens\ncompile time: ${time.toFixed(
+          4
+        )} ms\ncompile speed: ${speed} KiB/s`
+      );
+    },
+
+    /**
+   * parse tokens to generate html string
+   * @param {Array} tokens array of tokens
+   * @return {String}
+   */
+    parse: function parse(tokens) {
+      var formatted = ``;
+      var d = {
+        NAME: "name",
+        OBJECTPROP: "objprop",
+        KEY: "keyword",
+        COMMENT: "comment",
+        NUMBER: "number",
+        ARG: "argument",
+        CAPITAL: "capital",
+        METHOD: "method",
+        STRING: "string",
+        REGEX: "regex",
+        OPERATOR: "operator",
+      };
+      for (var i = 0; i < tokens.length; i++) {
+        var tkn = tokens[i],
+          tokenType = tkn.type;
+        if (tokenType != "OTHER") {
+          formatted +=
+            "<span class='" + d[tokenType] + "'>" + tkn.token + "</span>";
+        } else {
+          formatted += tkn.token;
+        }
+      }
+      return formatted;
+    }
   };
 
   /**
@@ -57,19 +111,16 @@
    * highlight all languages on page loads
    */
   w.addEventListener("load", function () {
-    var langs = w.Colorful.langs,
-      config = w.Colorful.config;
+    var langs = Object.keys(w.Colorful.tokenizers);
     for (var i = 0; i < langs.length; i++) {
       var lang = langs[i];
       var codes = document.getElementsByClassName(lang + "-colorful");
-      //chooses specific language compiler
-      var compiler = w.Colorful.compilers[lang];
       for (var k = 0; k < codes.length; k++) {
         var block = codes[k];
         var cfg = {
           enableLineNumbering: block.hasAttribute("lineNumbering")
         };
-        compiler.compile(codes[k], cfg);
+        window.Colorful.compile(codes[k], cfg, lang);
       }
     }
   });

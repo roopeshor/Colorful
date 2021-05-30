@@ -19,7 +19,7 @@
   // types of tokens
   const T_STRING = "STRING",
     T_KEY = "KEY",
-    T_TEXT = "TEXT",
+    T_NAME = "NAME",
     T_OPERATOR = "OPERATOR",
     T_COMMENT = "COMMENT",
     T_NUMBER = "NUMBER",
@@ -31,29 +31,6 @@
     T_OTHER = "OTHER";
   // an empty token
   var emptyToken = { type: "", token: "" };
-
-  /**
-   * combines tokenizer and parser
-   * @param {HTMLElement} container
-   * @param {Object} cfg
-   */
-  function highlight(container, cfg = w.Colorful.config) {
-    var text = container.innerText;
-    var d1 = w.performance.now();
-    var out = tokenize(text);
-    var markuped = parse(out.tokens);
-    var compileTime = w.performance.now() - d1;
-    container.innerHTML = w.Colorful.finishUp(cfg, text, markuped);
-    var speed = ((text.length / 1024 / compileTime) * 1000).toFixed(3); //kb/s
-    console.log(
-      `total code analysed: ${(text.length / 1024).toFixed(3)} KiB\nfound: ${
-        out.tokens.length
-      } tokens\ncompile time: ${compileTime.toFixed(
-        4
-      )} ms\ncompile speed: ${speed} KiB/s`
-    );
-  }
-
   /**
    * tokenize input text
    * @param {String} text text to be tokenised
@@ -109,7 +86,7 @@
         var space = text.substring(i).match(whitespace)[0];
         if (prevTkn.token) prevTkn.token += space;
         // if a token exists in the list add whitespaces to it
-        else addToken(T_TEXT, space); // if there is no previous tokens
+        else addToken(T_NAME, space); // if there is no previous tokens
         i += space.length;
       } else if (char == "'" || char == '"' || char == "`") {
         // string ahead
@@ -167,7 +144,7 @@
           addToken(T_COMMENT, comment);
         } else if (
           char == "/" &&
-          !((prevt == T_TEXT && !/^\s+$/.test(prevTkn.token)) || prevt == T_OBJECTPROP || prevt == T_NUMBER) &&
+          !((prevt == T_NAME && !/^\s+$/.test(prevTkn.token)) || prevt == T_OBJECTPROP || prevt == T_NUMBER) &&
           regexRE.test(nxt)
         ) {
           // regular expression ahead
@@ -175,7 +152,7 @@
           var tk = tokens[tokens.length - 2]?.type;
           if (
             prevTkn.type == T_COMMENT &&
-            (tk == T_TEXT || tk == T_OBJECTPROP || tk == T_NUMBER)
+            (tk == T_NAME || tk == T_OBJECTPROP || tk == T_NUMBER)
           ) {
             regExAhead = false;
           }
@@ -190,12 +167,12 @@
           }
         } else if (next2 == "=>") {
           // arrow expression
-          if (prevTkn.type == "TEXT") {
+          if (prevTkn.type == "NAME") {
             /* highlights single argument
               arg => {...}
               ^^^
             */
-            prevTkn.type = "ARGUMENT";
+            prevTkn.type = "ARG";
             argNames.push(prevTkn.token.trim(), "arguments"); // trim the token to et arguments name
             argScope.push((argScope[argScope.length - 1] || 0) + 2);
             scope = "function"; // after this should be a function
@@ -240,7 +217,7 @@
         scopeTree.push("(");
         scope = "(";
         // makes name of function colored to method
-        if (prevt == "TEXT" || prevt == "OBJECTPROP") {
+        if (prevt == "NAME" || prevt == "OBJECTPROP") {
           prev.type = T_METHOD;
         }
         if (isFunctionClause) {
@@ -294,7 +271,7 @@
       for (var k = 0; k < tks.length; k++) {
         var tk = tks[k];
         if (
-          (tk.type == T_TEXT || tk.type == T_CAPITAL) &&
+          (tk.type == T_NAME || tk.type == T_CAPITAL) &&
           tk.scopeLevel == base &&
           tks[k - 1]?.type != T_OPERATOR
         ) {
@@ -338,48 +315,10 @@
         addToken(T_ARGUMENT, word);
       } else {
         // argument inside function clause
-        addToken(T_TEXT, word);
+        addToken(T_NAME, word);
       }
     }
   }
 
-  /**
-   * parse tokens to generate html string
-   * @param {Array} tokens array of tokens
-   * @return {String}
-   */
-  function parse(tokens) {
-    var formatted = ``;
-    var d = {
-      TEXT: "name",
-      OBJECTPROP: "objprop",
-      KEY: "keyword",
-      COMMENT: "comment",
-      NUMBER: "number",
-      ARGUMENT: "argument",
-      CAPITAL: "capital",
-      METHOD: "method",
-      STRING: "string",
-      REGEX: "regex",
-      OPERATOR: "operator",
-    };
-    for (var i = 0; i < tokens.length; i++) {
-      var tkn = tokens[i],
-        tokenType = tkn.type;
-      if (tokenType != "OTHER") {
-        formatted +=
-          "<span class='" + d[tokenType] + "'>" + tkn.token + "</span>";
-      } else {
-        formatted += tkn.token;
-      }
-    }
-    return formatted;
-  }
-
-  w.Colorful.langs.push("JS");
-  w.Colorful.compilers.JS = {
-    compile: highlight,
-    tokenize: tokenize,
-    parse: parse,
-  };
+  w.Colorful.tokenizers.JS = tokenize
 })(window);
