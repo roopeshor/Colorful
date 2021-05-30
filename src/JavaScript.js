@@ -316,16 +316,11 @@
       var prevt = prevTkn.token || "";
       if (
         KeywordRE.test(word) || // global keywords
-        (word == "arguments" &&
-          scopeTree[scopeTree.length - 1] == "function") || // argument inside function clause
         ((word == "get" || word == "set") &&
           scopeTree[scopeTree.length - 1] == "class") // get/set inside class scope
       ) {
         // Keyword
-        if (
-          /(function|if|do|while|for|class|catch|else|finally|switch|try|)/.test(
-            word
-          )
+        if (/(function|if|do|while|for|class|catch|else|finally|switch|try)/.test(word)
         ) {
           scope = word.trim();
         }
@@ -333,16 +328,17 @@
       } else if (
         builtInObject.test(word) &&
         !/^(function|var|const|let)/.test(prevt) &&
-        prevt[0] != "."
+        !/(\.\s*)$/.test(prevt)
       ) {
         // builtin objects word
         addToken(T_CAPITAL, word);
-      } else if (/(\.)(\s*)$/.test(prevt)) {
+      } else if (/(\.\s*)$/.test(prevt)) {
         // object property
         addToken(T_OBJECTPROP, word);
-      } else if (argNames.indexOf(word.trim()) > -1) {
+      } else if (argNames.indexOf(word) > -1 || (word == "arguments" && scopeTree[scopeTree.length - 1] == "function")) {
         addToken(T_ARGUMENT, word);
       } else {
+        // argument inside function clause
         addToken(T_TEXT, word);
       }
     }
