@@ -196,8 +196,8 @@
               ^^^
             */
             prevTkn.type = "ARGUMENT";
-            argNames.push(prevTkn.token.trim()); // trim the token to et arguments name
-            argScope.push((argScope[argScope.length - 1] || 0) + 1);
+            argNames.push(prevTkn.token.trim(), "arguments"); // trim the token to et arguments name
+            argScope.push((argScope[argScope.length - 1] || 0) + 2);
             scope = "function"; // after this should be a function
           } else if (/\)\s*$/.test(prevTkn.token)) { 
             /* reads multiple arguments
@@ -243,12 +243,12 @@
         if (prevt == "TEXT" || prevt == "OBJECTPROP") {
           prev.type = T_METHOD;
         }
-        if (isFunctionClause && next2 != "()") {
-          // reads arguments
-          var tkn = tokenize(text.substring(i), { breakOnParenUnmatch: true });
-          var tkns = tkn.tokens;
-          readArgumentsInTokens(tkns);
-          i += tkn.inputEnd;
+        if (isFunctionClause) {
+            // reads arguments
+            var tkn = tokenize(text.substring(i), { breakOnParenUnmatch: true });
+            var tkns = tkn.tokens;
+            readArgumentsInTokens(tkns);
+            i += tkn.inputEnd;
         }
       } else if (char == "{" || char == "[") {
         addToken("OTHER", char);
@@ -303,8 +303,10 @@
           argNames.push(tk.token.trim());
         }
       }
+      argNames.push("arguments");
       tokens = tokens.concat(tks);
-      if (nos) argScope.push(nos + (argScope[argScope.length-1] || 0))
+      if (nos) argScope.push(nos + (argScope[argScope.length-1] || 0) + 1)
+      else argScope.push((argScope[argScope.length-1] || 0) + 1)
       scope = "function";
     }
 
@@ -332,7 +334,7 @@
       } else if (/(\.\s*)$/.test(prevt)) {
         // object property
         addToken(T_OBJECTPROP, word);
-      } else if (argNames.indexOf(word) > -1 || (word == "arguments" && scopeTree[scopeTree.length - 1] == "function")) {
+      } else if (argNames.indexOf(word) > -1) {
         addToken(T_ARGUMENT, word);
       } else {
         // argument inside function clause
