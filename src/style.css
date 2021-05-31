@@ -1,4 +1,4 @@
-.colorful {
+*[class$="colorful"] {
   display: inherit;
   margin: 5px;
   padding: 5px;
@@ -12,8 +12,7 @@
   font-size: 16px;
   overflow: auto;
 }
-
-.colorful-code{
+.colorful-code {
   position: relative;
   display: inherit;
   outline: none;
@@ -22,40 +21,36 @@
   margin-left: 0;
   tab-size: 2;
 }
-
-.colorful .string {
-  color:#1cca41;
+*[class$="colorful"] .string {
+  color: #23d349;
 }
-.colorful .keyword {
-  color:#c678dd;
+*[class$="colorful"] .keyword {
+  color: #c678dd;
 }
-.colorful .comment{
-  color:#777;
+*[class$="colorful"] .comment {
+  color: #777;
 }
-.colorful .operator{
-  color:#1598a7;
+*[class$="colorful"] .operator {
+  color: #1598a7;
 }
-.colorful .number{
-  color:#ffa601;
+*[class$="colorful"] .number {
+  color: #ffa601;
 }
-.colorful .method{
-  color:#44c4f8;
+*[class$="colorful"] .method {
+  color: #44c4f8;
 }
-.colorful .argument{
-  color:#ff983e;
+*[class$="colorful"] .argument {
+  color: #fc7c49;
 }
-.colorful .regex{
-  color:#f7aa67;
+*[class$="colorful"] .regex {
+  color: #f7aa67;
 }
-.colorful .object{
-  color:#e28306;
-}
-.colorful .capital{
-  color:#3cbef2;
+*[class$="colorful"] .builtIn {
+  color: #5db0d7;
   font-style: italic;
 }
-.colorful .objprop {
-  color:#e9e482;
+*[class$="colorful"] .objprop {
+  color: #e9e482;
 }
 .colorful-numberRow {
   display: inherit;

@@ -1,9 +1,9 @@
 (function (w) {
   // RegExes
   var KeywordRE =
-    /^(await|break|case|catch|class|const|continue|debugger|default|delete|do|else|enum|export|extends|false|finally|for|function|if|implements|import|in|instanceof|interface|let|native|new|null|package|private|protected|public|return|static|super|switch|this|throw|true|try|typeof|undefined|var|void|while|with|yield)$/;
-  var operatorRE = /[=+\-*/%!<>&|:?]*/;
-  var nameCharRE = /^[\w\u00C0-\uffff\$]+/;
+    /^(async|await|break|case|catch|class|const|continue|debugger|default|delete|do|else|export|extends|false|finally|for|function|if|implements|import|in|instanceof|interface|let|new|null|package|return|static|super|switch|this|throw|true|try|typeof|undefined|var|void|while|with|yield)$/;
+  var operatorRE = /[-=+*/%!<>&|:?]/;
+  var nameCharRE = /^[\wÀ-￿$]+/u; // \w, $ and from \u00c0 to \uffff
 
   // modified regex from Prism: https://github.com/PrismJS/prism/blob/master/components/prism-javascript.js#L21
   var number =
@@ -11,24 +11,24 @@
 
   var commentRE = /((\/\*[\s\S]*?\*\/|\/\*[\s\S]*)|(\/\/.*))/;
   var regexRE =
-    /^\/((?![*+?])(?:[^\r\n\[/\\]|\\.|\[(?:[^\r\n\]\\]|\\.)*\])+)\/((?:g(?:im?|mi?)?|i(?:gm?|mg?)?|m(?:gi?|ig?)?)?)/;
+    /^\/((?![*+?])(?:[^\r\n\[/\\]|\\.|\[(?:[^\r\n\]\\]|\\.)*\])+)\/[gimyus]*/;
   // builtIn objects
   var builtInObject =
     /^(AggregateError|Buffer|Array|ArrayBuffer|AsyncFunction|AsyncGenerator|AsyncGeneratorFunction|Atomics|BigInt|BigInt64Array|BigUint64Array|Boolean|DataView|Date|Error|EvalError|Float32Array|Float64Array|Function|Generator|GeneratorFunction|Int16Array|Int32Array|Int8Array|InternalError|Intl|JSON|Map|Math|Number|Object|Promise|Proxy|RangeError|ReferenceError|Reflect|RegExp|Set|SharedArrayBuffer|String|Symbol|SyntaxError|TypeError|URIError|Uint16Array|Uint32Array|Uint8Array|Uint8ClampedArray|WeakMap|WeakSet|WebAssembly)$/;
   var whitespace = /[\s]+/;
   // types of tokens
-  const T_STRING = "STRING",
-    T_KEY = "KEY",
-    T_NAME = "NAME",
-    T_OPERATOR = "OPERATOR",
-    T_COMMENT = "COMMENT",
-    T_NUMBER = "NUMBER",
-    T_ARGUMENT = "ARGUMENT",
-    T_CAPITAL = "CAPITAL",
-    T_OBJECTPROP = "OBJECTPROP",
-    T_METHOD = "METHOD",
-    T_REGEX = "REGEX",
-    T_OTHER = "OTHER";
+  const T_NAME = "NAME", // A
+    T_OBJECTPROP = "OBJECTPROP", // B
+    T_KEY = "KEY", // C
+    T_COMMENT = "COMMENT", // D
+    T_NUMBER = "NUMBER", // E
+    T_ARGUMENT = "ARGUMENT", // F
+    T_BUILTIN = "BUILTIN", // G
+    T_METHOD = "METHOD", // H
+    T_STRING = "STRING", // I
+    T_REGEX = "REGEX", // J
+    T_OPERATOR = "OPERATOR", // K
+    T_OTHER = "OTHER"; // L
   // an empty token
   var emptyToken = { type: "", token: "" };
   /**
@@ -134,7 +134,7 @@
             }
           }
         }
-      } else if (char.match(operatorRE)[0]) {
+      } else if (operatorRE.test(char)) {
         var nxt = text.substring(i);
         var prevt = prevTkn.type;
         if (next2 == "//" || next2 == "/*") {
@@ -144,7 +144,11 @@
           addToken(T_COMMENT, comment);
         } else if (
           char == "/" &&
-          !((prevt == T_NAME && !/^\s+$/.test(prevTkn.token)) || prevt == T_OBJECTPROP || prevt == T_NUMBER) &&
+          !(
+            (prevt == T_NAME && !/^\s+$/.test(prevTkn.token)) ||
+            prevt == T_OBJECTPROP ||
+            prevt == T_NUMBER
+          ) &&
           regexRE.test(nxt)
         ) {
           // regular expression ahead
@@ -167,16 +171,16 @@
           }
         } else if (next2 == "=>") {
           // arrow expression
-          if (prevTkn.type == "NAME") {
+          if (prevTkn.type == T_NAME) {
             /* highlights single argument
               arg => {...}
               ^^^
             */
-            prevTkn.type = "ARG";
-            argNames.push(prevTkn.token.trim(), "arguments"); // trim the token to et arguments name
-            argScope.push((argScope[argScope.length - 1] || 0) + 2);
+            prevTkn.type = T_ARGUMENT;
+            argNames.push(prevTkn.token.trim()); // trim the token to get arguments name
+            argScope.push((argScope[argScope.length - 1] || 0) + 1);
             scope = "function"; // after this should be a function
-          } else if (/\)\s*$/.test(prevTkn.token)) { 
+          } else if (/\)\s*$/.test(prevTkn.token)) {
             /* reads multiple arguments
               (arg1, arg2, argn) => {...}
                ^^^^  ^^^^  ^^^^
@@ -195,7 +199,7 @@
             // reverse the array
             toReadArray.reverse();
             // reads arguments
-            readArgumentsInTokens(toReadArray, initialScopeLevel+1);
+            readArgumentsInTokens(toReadArray, initialScopeLevel + 1);
           }
           addToken(T_OPERATOR, next2); // add `=>` to tokens
           i += 2;
@@ -209,26 +213,26 @@
         var prevt = prev.type;
         var pprev = tokens[tokens.length - 2] || emptyToken;
         const isFunctionClause =
-          (prev.token.substr(0, 8) == "function" && prevt == "KEY") ||
-          (pprev.token.substr(0, 8) == "function" && pprev.type == "KEY") ||
+          (prev.token.match(/function\s*$/) && prevt == T_KEY) ||
+          (pprev.token.match(/function\s*$/) && pprev.type == T_KEY) ||
           scopeTree[scopeTree.length - 1] == "class";
         addToken(T_OTHER, "(");
         i++;
         scopeTree.push("(");
         scope = "(";
         // makes name of function colored to method
-        if (prevt == "NAME" || prevt == "OBJECTPROP") {
+        if (prevt == T_NAME || prevt == T_OBJECTPROP) {
           prev.type = T_METHOD;
         }
         if (isFunctionClause) {
-            // reads arguments
-            var tkn = tokenize(text.substring(i), { breakOnParenUnmatch: true });
-            var tkns = tkn.tokens;
-            readArgumentsInTokens(tkns);
-            i += tkn.inputEnd;
+          // reads arguments
+          var tkn = tokenize(text.substring(i), { breakOnParenUnmatch: true });
+          var tkns = tkn.tokens;
+          readArgumentsInTokens(tkns);
+          i += tkn.inputEnd;
         }
       } else if (char == "{" || char == "[") {
-        addToken("OTHER", char);
+        addToken(T_OTHER, char);
         i++;
         scopeTree.push(scope);
         scope = char;
@@ -239,18 +243,22 @@
           "]": "breakOnBracketUnmatch",
         };
         if (scopeTree.length > 0) {
-          if (char == "}" && argScope.length && scopeTree[scopeTree.length-1] == "function") {
-            argNames.splice(argScope[argScope.length-2]);
+          if (
+            char == "}" &&
+            argScope.length &&
+            scopeTree[scopeTree.length - 1] == "function"
+          ) {
+            argNames.splice(argScope[argScope.length - 2]);
             argScope.pop();
           }
           scopeTree.pop();
         } else if (ErrHandler[handler[char]]) {
           break;
         }
-        addToken("OTHER", char);
+        addToken(T_OTHER, char);
         i++;
       } else {
-        addToken("OTHER", char);
+        addToken(T_OTHER, char);
         i++;
       }
       window.Colorful.mergeSameTypes(tokens);
@@ -271,19 +279,17 @@
       for (var k = 0; k < tks.length; k++) {
         var tk = tks[k];
         if (
-          (tk.type == T_NAME || tk.type == T_CAPITAL) &&
+          (tk.type == T_NAME || tk.type == T_BUILTIN) &&
           tk.scopeLevel == base &&
           tks[k - 1]?.type != T_OPERATOR
         ) {
-          nos++
+          nos++;
           tk.type = T_ARGUMENT;
           argNames.push(tk.token.trim());
         }
       }
-      argNames.push("arguments");
       tokens = tokens.concat(tks);
-      if (nos) argScope.push(nos + (argScope[argScope.length-1] || 0) + 1)
-      else argScope.push((argScope[argScope.length-1] || 0) + 1)
+      if (nos) argScope.push(nos + (argScope[argScope.length - 1] || 0) + 1);
       scope = "function";
     }
 
@@ -296,29 +302,33 @@
           scopeTree[scopeTree.length - 1] == "class") // get/set inside class scope
       ) {
         // Keyword
-        if (/(function|if|do|while|for|class|catch|else|finally|switch|try)/.test(word)
-        ) {
-          scope = word.trim();
-        }
         addToken(T_KEY, word);
+        if (
+          /(function|if|do|while|for|class|catch|else|finally|switch|try)/.test(
+            word
+          )
+        ) {
+          scope = word;
+        }
       } else if (
-        builtInObject.test(word) &&
-        !/^(function|var|const|let)/.test(prevt) &&
-        !/(\.\s*)$/.test(prevt)
+        (builtInObject.test(word) &&
+          !/^(function|var|const|let|interface)/.test(prevt) &&
+          !/(\.\s*)$/.test(prevt)) ||
+        (word == "constructor" && scopeTree[scopeTree.length - 1] == "class")
       ) {
         // builtin objects word
-        addToken(T_CAPITAL, word);
+        addToken(T_BUILTIN, word);
       } else if (/(\.\s*)$/.test(prevt)) {
         // object property
         addToken(T_OBJECTPROP, word);
-      } else if (argNames.indexOf(word) > -1) {
+      } else if (argNames.indexOf(word) > -1 || word == "arguments") {
+        // argument inside function clause
         addToken(T_ARGUMENT, word);
       } else {
-        // argument inside function clause
         addToken(T_NAME, word);
       }
     }
   }
 
-  w.Colorful.tokenizers.JS = tokenize
+  w.Colorful.tokenizers.JS = tokenize;
 })(window);
