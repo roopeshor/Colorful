@@ -69,7 +69,7 @@
           readWordToken(v);
         }
         i += v.length;
-        window.Colorful.mergeSameTypes(tokens);
+        mergeSameTypes();
       } else if (text[i] == "." && /\d/.test(text[i + 1])) {
         var w = text.substring(i).match(number)[0];
         addToken(T_NUMBER, w);
@@ -261,10 +261,23 @@
         addToken(T_OTHER, char);
         i++;
       }
-      window.Colorful.mergeSameTypes(tokens);
+      mergeSameTypes();
     }
     if (char == "\n") tokens[tokens.length - 1].token += "\n"; // quick fix
     return { tokens: tokens, inputEnd: i };
+    /** merges same type of consecutive tokens into
+     * single one to minimize tokens to parse
+    */
+    function mergeSameTypes () {
+      var tl = tokens.length;
+      if (
+        tokens[tl - 1].type == tokens[tl - 2]?.type &&
+        tokens[tl - 1].scopeLevel == tokens[tl - 2]?.scopeLevel
+      ) {
+        tokens[tl - 2].token += tokens[tl - 1].token;
+        tokens.pop();
+      }
+    }
     function addToken(type, token) {
       tokens.push({
         type: type,
@@ -331,4 +344,17 @@
   }
 
   w.Colorful.tokenizers.JS = tokenize;
+  w['Colorful'].tokenTypes = Object.assign(w['Colorful'].tokenTypes, {
+    "NAME"      : "name",
+    "OBJECTPROP": "objprop",
+    "KEY"       : "keyword",
+    "COMMENT"   : "comment",
+    "NUMBER"    : "number",
+    "ARGUMENT"  : "argument",
+    "BUILTIN"   : "builtIn",
+    "METHOD"    : "method",
+    "STRING"    : "string",
+    "REGEX"     : "regex",
+    "OPERATOR"  : "operator",
+  })
 })(window);

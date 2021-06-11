@@ -9,9 +9,10 @@
   line-height: normal;
   outline: none;
   white-space: pre;
-  font-size: 16px;
+  font-size: 17px;
   overflow: auto;
 }
+
 .colorful-code {
   position: relative;
   display: inherit;
@@ -20,6 +21,7 @@
   height: 100%;
   margin-left: 0;
   tab-size: 2;
+  font-family: Consolas, 'Courier New', monospace;
 }
 *[class$="colorful"] .string {
   color: #23d349;
@@ -52,6 +54,25 @@
 *[class$="colorful"] .objprop {
   color: #e9e482;
 }
+
+.HTML-colorful {
+  background-color: #272822;
+}
+
+*[class$="colorful"] .tag {
+  color: #f12666;
+}
+*[class$="colorful"] .arrtibute {
+  color: #98da2e;
+}
+*[class$="colorful"] .value {
+  color: #e5db6f;
+}
+*[class$="colorful"] .html-special {
+  color: #8370f4;
+}
+
+
 .colorful-numberRow {
   display: inherit;
   padding-right: 10px;

@@ -4,20 +4,8 @@
       enableLineNumbering: true,
     },
     tokenizers: {}, // tokenizers
-    /** merges same type of consecutive tokens into
-     * single one to minimize tokens to parse
-    */
-    mergeSameTypes: function (tokens) {
-      var tl = tokens.length;
-      if (
-        tokens[tl - 1].type == tokens[tl - 2]?.type &&
-        tokens[tl - 1].scopeLevel == tokens[tl - 2]?.scopeLevel
-      ) {
-        tokens[tl - 2].token += tokens[tl - 1].token;
-        tokens.pop();
-      }
-    },
-
+    tokenTypes: {}, // includes tokens except `OTHER` type
+    
     /** takes parsed HTML string and wraps it in a `code` tag
      */
     finishUp: function (cfg, text, markuped) {
@@ -54,7 +42,8 @@
       container.innerHTML = w.Colorful.finishUp(cfg, text, markuped);
       var speed = ((text.length / 1024 / time) * 1000).toFixed(3); //kb/s
       console.log(
-        `total code analysed: ${(text.length / 1024).toFixed(3)} KiB\nfound: ${
+        `Language: ${lang}
+total code analysed: ${(text.length / 1024).toFixed(3)} KiB\nfound: ${
           out.tokens.length
         } tokens\ncompile time: ${time.toFixed(
           4
@@ -69,27 +58,16 @@
    */
     parse: function parse(tokens) {
       var formatted = ``;
-      var d = {
-        NAME: "name",
-        OBJECTPROP: "objprop",
-        KEY: "keyword",
-        COMMENT: "comment",
-        NUMBER: "number",
-        ARGUMENT: "argument",
-        BUILTIN: "builtIn",
-        METHOD: "method",
-        STRING: "string",
-        REGEX: "regex",
-        OPERATOR: "operator",
-      };
+      var d = this.tokenTypes;
       for (var i = 0; i < tokens.length; i++) {
         var tkn = tokens[i],
-          tokenType = tkn.type;
+          tokenType = tkn.type,
+          token = tkn.token.replaceSpecHTMLChars();
         if (tokenType != "OTHER") {
           formatted +=
-            "<span class='" + d[tokenType] + "'>" + tkn.token + "</span>";
+            "<span class='" + d[tokenType] + "'>" + token + "</span>";
         } else {
-          formatted += tkn.token;
+          formatted += token;
         }
       }
       return formatted;
