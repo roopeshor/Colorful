@@ -9,7 +9,7 @@
   line-height: normal;
   outline: none;
   white-space: pre;
-  font-size: 17px;
+  font-size: 16px;
   overflow: auto;
 }
 
@@ -22,8 +22,9 @@
   margin-left: 0;
   tab-size: 2;
   font-family: Consolas, 'Courier New', monospace;
+  text-shadow: 0px 1px #101010;
 }
-*[class$="colorful"] .string {
+*[class$="colorful"] .string, *[class$="colorful"] .value {
   color: #23d349;
 }
 *[class$="colorful"] .keyword {
@@ -55,18 +56,12 @@
   color: #e9e482;
 }
 
-.HTML-colorful {
-  background-color: #272822;
-}
-
 *[class$="colorful"] .tag {
-  color: #f12666;
+  color: #f12e58;
+  text-rendering: optimizeLegibility;
 }
-*[class$="colorful"] .arrtibute {
-  color: #98da2e;
-}
-*[class$="colorful"] .value {
-  color: #e5db6f;
+*[class$="colorful"] .attribute {
+  color: #b1d13e;
 }
 *[class$="colorful"] .html-special {
   color: #8370f4;
