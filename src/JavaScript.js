@@ -42,11 +42,12 @@
    *  breakOnParenUnmatch: true/false,
    *  breakOnBracketUnmatch: true/false
    * }
+   * @param {RegExp} EnderRE ends parsing at this word
    * @return {Object}
    *
    * @example tokenize("...", { breakOnBraceUnmatch:true }) // returns tokens when brace not matches or EOF reached
    */
-  function tokenize(text, ErrHandler = {}) {
+  function tokenize(text, ErrHandler = {}, EnderRE) {
     var len = text.length;
     var tokens = [],
       word = "",
@@ -58,6 +59,9 @@
     while (i < len) {
       word = text.substring(i).match(nameCharRE);
       var isNum, prevTkn;
+      if (EnderRE && EnderRE.test(text.substring(i))) {
+        return { tokens: tokens, inputEnd: i };
+      }
       if (word) {
         var v = word[0];
         isNum = v.match(number);
@@ -80,7 +84,6 @@
       /* after matching a word there will be a non-unicode characters (punctuations, operators, etc.) that will follow word. Following code analyses it */
       var char = text[i]; // next character
       var next2 = text.substr(i, 2); // next two characters
-
       if (whitespace.test(char)) {
         // finds next whitespace characters
         var space = text.substring(i).match(whitespace)[0];
@@ -281,7 +284,7 @@
     function addToken(type, token) {
       tokens.push({
         type: type,
-        token: token.replaceSpecHTMLChars(),
+        token: token,
         scopeLevel: scopeTree.length,
       });
     }

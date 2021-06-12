@@ -32,6 +32,7 @@
     var tokens = [],
       i = 0,
       recentTag = "";
+    const JS_TOKENIZER = window['Colorful']['tokenizers']['JS'];
     while (i < len) {
       var char = text[i];
       var next = text.substr(i);
@@ -51,7 +52,6 @@
           if (tagName) {
             addToken(T_TAG, tagName[0]);
             i += tagName[0].length;
-
             // run a paser locally to find attributes and values
             while (i < len) {
               var ch = text[i];
@@ -59,6 +59,16 @@
                 // end of tag
                 addToken(T_TAG_PUCT_R, ch);
                 i++;
+                if (tagName[0] == "script" && puctuations == "<") {
+                  // parse JS
+                  if (JS_TOKENIZER != undefined) {
+                    var res = JS_TOKENIZER(text.substr(i), {}, /^<\/script\s*>/i);
+                    if (res.tokens.length) {
+                      tokens = tokens.concat(res.tokens);
+                      i += res.inputEnd;
+                    }
+                  }
+                }
                 break;
               } else if (ch == "=") {
                 addToken(T_OPERATOR, ch);

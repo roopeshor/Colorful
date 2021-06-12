@@ -6,7 +6,7 @@ window.addEventListener("load", () => {
       evt.preventDefault();
       output.scroll(active.scrollTop, active.scrollLeft);
       var vl = evt.target.value
-      var tkns = Colorful.tokenizers.JS(vl).tokens
+      var tkns = Colorful.tokenizers.HTML(vl).tokens
       output.innerHTML = Colorful.parse(tkns);
   }
 
