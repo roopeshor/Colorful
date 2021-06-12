@@ -1,6 +1,11 @@
 //@ts-check
 
 (function (w) {
+  // check for core.js
+  if (!window["Colorful"]) {
+    console.error("Core part of library wasn't imported. Import it by adding script tag linking core.js`");
+    return;
+  }
   var operatorRE = /^[=/<>!]+/;
   var attributeRE = /^[^=>/]+/;
   var commentRE = /(<!--[\s\S]*?-->|<!--[\s\S]*)/;
@@ -170,7 +175,7 @@
   }
 
   w['Colorful']['tokenizers']['HTML'] = tokenize;
-  w['Colorful'].tokenTypes = Object.assign(w['Colorful'].tokenTypes, {
+  w['Colorful']["tokenTypes"] = Object.assign(w['Colorful']['tokenTypes'], {
     [T_TAG]       : "tag html-tag",
     [T_ATTRIBUTE] : "attribute html-attribute",
     [T_OPERATOR]  : "operator html-operator",

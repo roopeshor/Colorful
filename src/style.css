@@ -1,4 +1,4 @@
-*[class$="colorful"] {
+*[class^="cf"] {
   display: inherit;
   margin: 5px;
   padding: 5px;
@@ -13,7 +13,7 @@
   overflow: auto;
 }
 
-.colorful-code {
+.cf-code {
   position: relative;
   display: inherit;
   outline: none;
@@ -22,53 +22,9 @@
   margin-left: 0;
   tab-size: 4;
   font-family: Consolas, 'Courier New', monospace;
-  text-shadow: 0px 1px #101010;
-}
-*[class$="colorful"] .string, *[class$="colorful"] .value {
-  color: #23d349;
-}
-*[class$="colorful"] .keyword {
-  color: #c678dd;
-}
-*[class$="colorful"] .comment {
-  color: #777;
-}
-*[class$="colorful"] .operator {
-  color: #1598a7;
-}
-*[class$="colorful"] .number {
-  color: #ffa601;
-}
-*[class$="colorful"] .method {
-  color: #44c4f8;
-}
-*[class$="colorful"] .argument {
-  color: #fc7c49;
-}
-*[class$="colorful"] .regex {
-  color: #f7aa67;
-}
-*[class$="colorful"] .builtIn {
-  color: #5db0d7;
-  font-style: italic;
-}
-*[class$="colorful"] .objprop {
-  color: #e9e482;
 }
 
-*[class$="colorful"] .tag {
-  color: #f12e58;
-  text-rendering: optimizeLegibility;
-}
-*[class$="colorful"] .attribute {
-  color: #b1d13e;
-}
-*[class$="colorful"] .html-special {
-  color: #8370f4;
-}
-
-
-.colorful-numberRow {
+.cf-numberRow {
   display: inherit;
   padding-right: 10px;
   padding-left: 15px;
@@ -76,4 +32,47 @@
   width: min-content;
   border-right: 1px solid #666;
   color: #858585;
+}
+
+span[class~="token"][class~="string"], span[class~="token"][class~="value"] {
+  color: #23d349;
+}
+span[class~="token"][class~="keyword"] {
+  color: #c678dd;
+}
+span[class~="token"][class~="comment"] {
+  color: #777;
+}
+span[class~="token"][class~="operator"] {
+  color: #1598a7;
+}
+span[class~="token"][class~="number"] {
+  color: #ffa601;
+}
+span[class~="token"][class~="method"] {
+  color: #44c4f8;
+}
+span[class~="token"][class~="argument"] {
+  color: #fc7c49;
+}
+span[class~="token"][class~="regex"] {
+  color: #f7aa67;
+}
+span[class~="token"][class~="builtIn"] {
+  color: #5db0d7;
+  font-style: italic;
+}
+span[class~="token"][class~="objprop"] {
+  color: #e9e482;
+}
+
+span[class~="token"][class~="tag"] {
+  color: #f12e58;
+  text-rendering: optimizeLegibility;
+}
+span[class~="token"][class~="attribute"] .attribute {
+  color: #b1d13e;
+}
+span[class~="token"][class~="html-special"]{
+  color: #8370f4;
 }

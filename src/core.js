@@ -1,28 +1,28 @@
 (function (w) {
   w.Colorful = {
+    // default configuration
     config: {
       enableLineNumbering: true,
     },
     tokenizers: {}, // tokenizers
     tokenTypes: {}, // includes tokens except `OTHER` type
     
-    /** takes parsed HTML string and wraps it in a `code` tag
-     */
+    /** takes parsed HTML string and wraps it in a `code` tag*/
     finishUp: function (cfg, text, markuped) {
       var complete;
       if (cfg.enableLineNumbering) {
         var lineCount = text.match(/\n/g)?.length + 1 || 1;
-        complete = "<table border=0><tr><td><pre class='colorful-numberRow'>";
+        complete = "<table border=0><tr><td><pre class='cf-numberRow'>";
         for (var i = 1; i <= lineCount; i++) {
           complete += i;
           if (i < lineCount) complete += "\n";
         }
         complete +=
-          '</pre></td><td><code class="colorful-code">' +
+          '</pre></td><td><code class="cf-code">' +
           markuped +
           "</code></td></tr></table>";
       } else {
-        complete = '<code class="colorful-code">' + markuped + "</code>";
+        complete = '<code class="cf-code">' + markuped + "</code>";
       }
       return complete;
     },
@@ -65,7 +65,7 @@ total code analysed: ${(text.length / 1024).toFixed(3)} KiB\nfound: ${
           token = tkn.token.replaceSpecHTMLChars();
         if (tokenType != "OTHER") {
           formatted +=
-            "<span class='" + d[tokenType] + "'>" + token + "</span>";
+            "<span class='token " + d[tokenType] + "'>" + token + "</span>";
         } else {
           formatted += token;
         }
@@ -92,7 +92,7 @@ total code analysed: ${(text.length / 1024).toFixed(3)} KiB\nfound: ${
     var langs = Object.keys(w.Colorful.tokenizers);
     for (var i = 0; i < langs.length; i++) {
       var lang = langs[i];
-      var codes = document.getElementsByClassName(lang + "-colorful");
+      var codes = document.getElementsByClassName("cf-"+lang);
       for (var k = 0; k < codes.length; k++) {
         var block = codes[k];
         var cfg = {

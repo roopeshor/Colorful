@@ -1,4 +1,10 @@
 (function (w) {
+  // check for core.js
+  if (!window["Colorful"]) {
+    console.error("Core part of library wasn't imported. Import it by adding script tag linking core.js`");
+    return;
+  }
+
   // RegExes
   var KeywordRE =
     /^(async|await|break|case|catch|class|const|continue|debugger|default|delete|do|else|export|extends|false|finally|for|function|if|implements|import|in|instanceof|interface|let|new|null|package|return|static|super|switch|this|throw|true|try|typeof|undefined|var|void|while|with|yield)$/;
@@ -7,7 +13,7 @@
 
   // modified regex from Prism: https://github.com/PrismJS/prism/blob/master/components/prism-javascript.js#L21
   var number =
-    /^(\b(?:(?:0[xX](?:[\dA-Fa-f](?:_[\dA-Fa-f])?)+|0[bB](?:[01](?:_[01])?)+|0[oO](?:[0-7](?:_[0-7])?)+)n?|(?:\d(?:_\d)?)+n|NaN|Infinity)\b|(?:\b(?:\d(?:_\d)?)+\.?(?:\d(?:_\d)?)*|\B\.(?:\d(?:_\d)?)+)(?:[Ee][+-]?(?:\d(?:_\d)?)+)?)/;
+  /^((?:(?:0[xX](?:[\dA-Fa-f](?:_[\dA-Fa-f])?)+|0[bB](?:[01](?:_[01])?)+|0[oO](?:[0-7](?:_[0-7])?)+)n?|(?:\d(?:_\d)?)+n|NaN|Infinity)\b|(?:(?:\d(?:_\d)?)+\.?(?:\d(?:_\d)?)*|\B\.(?:\d(?:_\d)?)+)(?:[Ee][+-]?(?:\d(?:_\d)?)+)?)/;
 
   var commentRE = /(\/\*[\s\S]*?\*\/|\/\*[\s\S]*|\/\/.*)/;
   var regexRE =
@@ -17,18 +23,18 @@
     /^(AggregateError|Buffer|Array|ArrayBuffer|AsyncFunction|AsyncGenerator|AsyncGeneratorFunction|Atomics|BigInt|BigInt64Array|BigUint64Array|Boolean|DataView|Date|Error|EvalError|Float32Array|Float64Array|Function|Generator|GeneratorFunction|Int16Array|Int32Array|Int8Array|InternalError|Intl|JSON|Map|Math|Number|Object|Promise|Proxy|RangeError|ReferenceError|Reflect|RegExp|Set|SharedArrayBuffer|String|Symbol|SyntaxError|TypeError|URIError|Uint16Array|Uint32Array|Uint8Array|Uint8ClampedArray|WeakMap|WeakSet|WebAssembly)$/;
   var whitespace = /[\s]+/;
   // types of tokens
-  const T_NAME = "NAME", // A
-    T_OBJECTPROP = "OBJECTPROP", // B
-    T_KEY = "KEY", // C
-    T_COMMENT = "COMMENT", // D
-    T_NUMBER = "NUMBER", // E
-    T_ARGUMENT = "ARGUMENT", // F
-    T_BUILTIN = "BUILTIN", // G
-    T_METHOD = "METHOD", // H
-    T_STRING = "STRING", // I
-    T_REGEX = "REGEX", // J
-    T_OPERATOR = "OPERATOR", // K
-    T_OTHER = "OTHER"; // L
+  const T_NAME = "NAME",
+    T_OBJECTPROP = "OBJECTPROP",
+    T_KEY = "KEY",
+    T_COMMENT = "COMMENT",
+    T_NUMBER = "NUMBER",
+    T_ARGUMENT = "ARGUMENT",
+    T_BUILTIN = "BUILTIN",
+    T_METHOD = "METHOD",
+    T_STRING = "STRING",
+    T_REGEX = "REGEX",
+    T_OPERATOR = "OPERATOR",
+    T_OTHER = "OTHER";
   // an empty token
   var emptyToken = { type: "", token: "" };
   /**
@@ -270,8 +276,8 @@
     return { tokens: tokens, inputEnd: i };
     /** merges same type of consecutive tokens into
      * single one to minimize tokens to parse
-    */
-    function mergeSameTypes () {
+     */
+    function mergeSameTypes() {
       var tl = tokens.length;
       if (
         tokens[tl - 1].type == tokens[tl - 2]?.type &&
@@ -346,18 +352,20 @@
     }
   }
 
-  w.Colorful.tokenizers.JS = tokenize;
-  w['Colorful'].tokenTypes = Object.assign(w['Colorful'].tokenTypes, {
-    "NAME"      : "name",
-    "OBJECTPROP": "objprop",
-    "KEY"       : "keyword",
-    "COMMENT"   : "comment",
-    "NUMBER"    : "number",
-    "ARGUMENT"  : "argument",
-    "BUILTIN"   : "builtIn",
-    "METHOD"    : "method",
-    "STRING"    : "string",
-    "REGEX"     : "regex",
-    "OPERATOR"  : "operator",
-  })
+  w["Colorful"]["tokenizers"]["JS"] = tokenize;
+
+  // add types of token used here to tokenType object for parser to classify tokens
+  w["Colorful"]["tokenTypes"] = Object.assign(w["Colorful"]["tokenTypes"], {
+    [T_NAME]: "name js-name",
+    [T_OBJECTPROP]: "objprop",
+    [T_KEY]: "keyword js-keyword",
+    [T_COMMENT]: "comment js-comment",
+    [T_NUMBER]: "number js-number",
+    [T_ARGUMENT]: "argument",
+    [T_BUILTIN]: "builtIn js-builtIn",
+    [T_METHOD]: "method js-method",
+    [T_STRING]: "string js-string",
+    [T_REGEX]: "regex",
+    [T_OPERATOR]: "operator js-operator",
+  });
 })(window);
