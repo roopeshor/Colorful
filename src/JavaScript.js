@@ -1,7 +1,9 @@
 (function (w) {
   // check for core.js
   if (!window["Colorful"]) {
-    console.error("Core part of library wasn't imported. Import it by adding script tag linking core.js`");
+    console.error(
+      "Core part of library wasn't imported. Import it by adding script tag linking core.js`"
+    );
     return;
   }
 
@@ -13,7 +15,7 @@
 
   // modified regex from Prism: https://github.com/PrismJS/prism/blob/master/components/prism-javascript.js#L21
   var number =
-  /^((?:(?:0[xX](?:[\dA-Fa-f](?:_[\dA-Fa-f])?)+|0[bB](?:[01](?:_[01])?)+|0[oO](?:[0-7](?:_[0-7])?)+)n?|(?:\d(?:_\d)?)+n|NaN|Infinity)\b|(?:(?:\d(?:_\d)?)+\.?(?:\d(?:_\d)?)*|\B\.(?:\d(?:_\d)?)+)(?:[Ee][+-]?(?:\d(?:_\d)?)+)?)/;
+    /^((?:(?:0[xX](?:[\dA-Fa-f](?:_[\dA-Fa-f])?)+|0[bB](?:[01](?:_[01])?)+|0[oO](?:[0-7](?:_[0-7])?)+)n?|(?:\d(?:_\d)?)+n|NaN|Infinity)\b|(?:(?:\d(?:_\d)?)+\.?(?:\d(?:_\d)?)*|\B\.(?:\d(?:_\d)?)+)(?:[Ee][+-]?(?:\d(?:_\d)?)+)?)/;
 
   var commentRE = /(\/\*[\s\S]*?\*\/|\/\*[\s\S]*|\/\/.*)/;
   var regexRE =
@@ -23,18 +25,18 @@
     /^(AggregateError|Buffer|Array|ArrayBuffer|AsyncFunction|AsyncGenerator|AsyncGeneratorFunction|Atomics|BigInt|BigInt64Array|BigUint64Array|Boolean|DataView|Date|Error|EvalError|Float32Array|Float64Array|Function|Generator|GeneratorFunction|Int16Array|Int32Array|Int8Array|InternalError|Intl|JSON|Map|Math|Number|Object|Promise|Proxy|RangeError|ReferenceError|Reflect|RegExp|Set|SharedArrayBuffer|String|Symbol|SyntaxError|TypeError|URIError|Uint16Array|Uint32Array|Uint8Array|Uint8ClampedArray|WeakMap|WeakSet|WebAssembly)$/;
   var whitespace = /[\s]+/;
   // types of tokens
-  const T_NAME = "NAME",
-    T_OBJECTPROP = "OBJECTPROP",
-    T_KEY = "KEY",
-    T_COMMENT = "COMMENT",
-    T_NUMBER = "NUMBER",
-    T_ARGUMENT = "ARGUMENT",
-    T_BUILTIN = "BUILTIN",
-    T_METHOD = "METHOD",
-    T_STRING = "STRING",
-    T_REGEX = "REGEX",
-    T_OPERATOR = "OPERATOR",
-    T_OTHER = "OTHER";
+  const T_NAME = "JS-NAME",
+    T_OBJECTPROP = "JS-OBJECTPROP",
+    T_KEY = "JS-KEY",
+    T_COMMENT = "JS-COMMENT",
+    T_NUMBER = "JS-NUMBER",
+    T_ARGUMENT = "JS-ARGUMENT",
+    T_BUILTIN = "JS-BUILTIN",
+    T_METHOD = "JS-METHOD",
+    T_STRING = "JS-STRING",
+    T_REGEX = "JS-REGEX",
+    T_OPERATOR = "JS-OPERATOR",
+    T_OTHER = "JS-OTHER";
   // an empty token
   var emptyToken = { type: "", token: "" };
   /**
