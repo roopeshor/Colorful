@@ -14,7 +14,6 @@
   overflow: auto;
   
 }
-
 .code-cf {
   display: block;
   background-color: #101515;
@@ -67,7 +66,6 @@
 
 .code-cf .tag {
   color: #f12e58;
-  text-rendering: optimizeLegibility;
 }
 .code-cf .attribute {
   color: orange;
