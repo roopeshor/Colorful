@@ -24,9 +24,7 @@
         T_TAG_PUCT_R = "HTML-TAG-PUCTUATION-RIGHT",
         T_VALUE_OPER = "HTML-VALUE_OPERATOR",
         T_VALUE = "HTML-VALUE";
-  // an empty token
 
-  const log = function (){ console.log(...arguments); }
   /**
    * tokenize input text
    * @param {String} text text to be tokenised
@@ -36,8 +34,7 @@
     var len = text.length;
     var tokens = [],
       i = 0,
-      recentTag = "";
-    const JS_TOKENIZER = window['Colorful']['tokenizers']['JS'];
+      JS_tokenizer = window['Colorful']['tokenizers']['JS'];
     while (i < len) {
       var char = text[i];
       var next = text.substr(i);
@@ -66,11 +63,11 @@
                 i++;
                 if (tagName[0] == "script" && puctuations == "<") {
                   // parse JS
-                  if (JS_TOKENIZER != undefined) {
-                    var res = JS_TOKENIZER(text.substr(i), {}, /^<\/script\s*>/i);
-                    if (res.tokens.length) {
-                      tokens = tokens.concat(res.tokens);
-                      i += res.inputEnd;
+                  if (JS_tokenizer != undefined) {
+                    var res = JS_tokenizer(text.substr(i), {}, /^<\/script\s*>/i);
+                    if (res['tokens'].length) {
+                      tokens = tokens.concat(res['tokens']);
+                      i += res['inputEnd'];
                     }
                   }
                 }
@@ -153,29 +150,22 @@
         addToken(T_OTHER, val);
       }
     }
-    return { tokens: tokens, inputEnd: i };
+    return { "tokens": tokens, "inputEnd": i };
 
-    function mergeSameTypes () {
-      var tl = tokens.length;
-      if (tokens[tl - 1].type == tokens[tl - 2]?.type) {
-        tokens[tl - 2].token += tokens[tl - 1].token;
-        tokens.pop();
-      }
-    }
     /**
-     * @param {any} type
-     * @param {any} token
+     * @param {string} type
+     * @param {string} token
      */
     function addToken(type, token) {
       tokens.push({
-        type: type,
-        token: token,
+        "type": type,
+        "token": token,
       });
     }
   }
 
   w['Colorful']['tokenizers']['HTML'] = tokenize;
-  w['Colorful']["tokenTypes"] = Object.assign(w['Colorful']['tokenTypes'], {
+  w['Colorful']["tokenTypes"] = Object.assign(w['Colorful']["tokenTypes"], {
     [T_TAG]       : "tag html-tag",
     [T_ATTRIBUTE] : "attribute html-attribute",
     [T_OPERATOR]  : "operator html-operator",
@@ -186,5 +176,5 @@
     [T_TAG_PUCT_R]: "operator tag-puctuation-right",
     [T_VALUE_OPER]: "value value_operator",
     [T_VALUE]     : "value"
-  })
+  });
 })(window);

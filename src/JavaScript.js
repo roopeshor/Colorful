@@ -1,3 +1,4 @@
+//@ts-check
 (function (w) {
   // check for core.js
   if (!window["Colorful"]) {
@@ -41,7 +42,7 @@
   var emptyToken = { type: "", token: "" };
   /**
    * tokenize input text
-   * @param {String} text text to be tokenised
+   * @param {string} text text to be tokenised
    * @param {Object} [ErrHandler={}] defines how errors should be handled.
    * Only handles bracket/brace/paren un matches only in one way: either break and return tokens or continue.
    *
@@ -50,15 +51,16 @@
    *  breakOnParenUnmatch: true/false,
    *  breakOnBracketUnmatch: true/false
    * }
-   * @param {RegExp} EnderRE ends parsing at this word
+   * @param {RegExp} EnderRE ends parsing at this expression.
+   *                         used in parseing JS code inside HTML code
    * @return {Object}
    *
    * @example tokenize("...", { breakOnBraceUnmatch:true }) // returns tokens when brace not matches or EOF reached
    */
-  function tokenize(text, ErrHandler = {}, EnderRE) {
+  function tokenize(text, ErrHandler = {}, EnderRE=null) {
     var len = text.length;
     var tokens = [],
-      word = "",
+      word,
       scopeTree = [], // list like structure defines where current tokenisation is happening
       argNames = [], // list of argument names
       argScope = [], // cumulated scope number of arguments
@@ -105,7 +107,7 @@
         addToken(T_STRING, char);
         i++;
 
-        var str = "";
+        var str;
         var slashes = 0; // number of backslashes
         //regular expression that is used to match all characters except the string determiner and backslashes
         var re =
@@ -172,9 +174,9 @@
             regExAhead = false;
           }
           if (regExAhead) {
-            var re = nxt.match(regexRE)[0];
-            addToken(T_REGEX, re);
-            i += re.length;
+            var reg = nxt.match(regexRE)[0];
+            addToken(T_REGEX, reg);
+            i += reg.length;
           } else {
             //operator
             addToken(T_OPERATOR, char);
@@ -357,7 +359,7 @@
   w["Colorful"]["tokenizers"]["JS"] = tokenize;
 
   // add types of token used here to tokenType object for parser to classify tokens
-  w["Colorful"]["tokenTypes"] = Object.assign(w["Colorful"]["tokenTypes"], {
+  w["Colorful"]["tokenTypes"] = Object.assign(w["Colorful"]["tokenTypes"],{
     [T_NAME]: "name js-name",
     [T_OBJECTPROP]: "objprop",
     [T_KEY]: "keyword js-keyword",

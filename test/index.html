@@ -11,9 +11,9 @@
     <script src="https://cdn.jsdelivr.net/gh/Roopesh2/Colorful@master/src/JavaScript.js" defer></script> -->
     <!-- <script src="../src/core.js" defer></script>
     <script src="../src/JavaScript.js" defer></script> -->
-    <script src="../src/core.js" defer></script>
-    <script src="../src/HTML.js" defer></script>
-    <script src="../src/JavaScript.js" defer></script>
+    <script src="../dist/core.js" defer></script>
+    <script src="../dist/HTML.js" defer></script>
+    <script src="../dist/JavaScript.js" defer></script>
     <script src="./test.js" defer></script>
   </head>
   <body>
@@ -22,12 +22,16 @@
     <p>Examples:</p>
     <div class="container">
       <div class="b1">
-        <pre class="cf-HTML" id="editor-output"></pre>
+        <pre class="code-cf" id="editor-output"></pre>
         <textarea id="editor-active" placeholder="Paste your code here" spellcheck="false"></textarea>
       </div>
 			<div class="block">
 				<p>HTML Code</p>
-				<pre class="cf-HTML"></pre>
+				<pre class="cf-HTML">&lt;script src="../src/core.js" defer>&lt;/script>
+	&lt;script src="../src/HTML.js" defer>&lt;/script>
+	&lt;script src="../src/JavaScript.js" defer>&lt;/script>
+	&lt;script src="./test.js" defer>&lt;/script>
+&lt;/head></pre>
 			</div>
       <div class="block">
         <p>The source code of this project with line numbers: </p>
@@ -110,7 +114,7 @@
 			}
 			if (i == len) break; // break if EOF
 			prevTkn = tokens[tokens.length - 1] || emptyToken; // previous token
-			/* after matching a word there will be a non-unicode characters (punctuations, operators, etc.) that will follow word. Following code analyses it */
+			/* after matching a word there will be a non-unicode characters (punctuations, operators, etc.) that will follow word. Following pre analyses it */
 			var char = text[i]; // next character
 			var next2 = text.substr(i, 2); // next two characters
 
@@ -155,7 +159,7 @@
 						addToken(T_OPERATOR, "${"); // adds `${` as operator
 						i += 2;
 						var nxt = text.substring(i); // text left to parse except `${`
-						var out = tokenize(nxt, { breakOnBraceUnmatch: true }); // tokenises code left
+						var out = tokenize(nxt, { breakOnBraceUnmatch: true }); // tokenises pre left
 						if (out.tokens.length) tokens = tokens.concat(out.tokens);
 						i += out.inputEnd;
 						if (out.inputEnd != nxt.length) {

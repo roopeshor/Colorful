@@ -1,31 +1,30 @@
-*[class^="cf"] {
-  display: inherit;
-  margin: 5px;
-  padding: 5px;
+ *[class^="cf"] {
+  display: flex;
   resize: both;
-  background-color: #101515;
   color: #fff;
-  font-family: monospace;
+  font-family: Consolas, 'Courier New', monospace;
   line-height: normal;
   outline: none;
-  white-space: pre;
   font-size: 16px;
+  background-color: #101515;
+  white-space: pre;
+  justify-content: flex-start;
+  padding: 10px;
+  resize: none;
   overflow: auto;
+  
 }
 
-.cf-code {
+.code-cf {
+  display: block;
+  background-color: #101515;
   position: relative;
-  display: inherit;
-  outline: none;
-  width: 100%;
-  height: 100%;
-  margin-left: 0;
+  padding-left: 10px;
   tab-size: 4;
-  font-family: Consolas, 'Courier New', monospace;
+  width: min-content;
+  resize: none;
 }
-
-.cf-numberRow {
-  display: inherit;
+.numberRow-cf {
   padding-right: 10px;
   padding-left: 15px;
   text-align: right;
@@ -34,45 +33,45 @@
   color: #858585;
 }
 
-span[class~="token"][class~="string"], span[class~="token"][class~="value"] {
+.code-cf .string, .code-cf .value {
   color: #23d349;
 }
-span[class~="token"][class~="keyword"] {
+.code-cf .keyword {
   color: #c678dd;
 }
-span[class~="token"][class~="comment"] {
+.code-cf .comment {
   color: #777;
 }
-span[class~="token"][class~="operator"] {
+.code-cf .operator {
   color: #1598a7;
 }
-span[class~="token"][class~="number"] {
+.code-cf .number {
   color: #ffa601;
 }
-span[class~="token"][class~="method"] {
+.code-cf .method {
   color: #44c4f8;
 }
-span[class~="token"][class~="argument"] {
+.code-cf .argument {
   color: #fc7c49;
 }
-span[class~="token"][class~="regex"] {
+.code-cf .regex {
   color: #f7aa67;
 }
-span[class~="token"][class~="builtIn"] {
+.code-cf .builtIn {
   color: #5db0d7;
   font-style: italic;
 }
-span[class~="token"][class~="objprop"] {
+.code-cf .objprop {
   color: #e9e482;
 }
 
-span[class~="token"][class~="tag"] {
+.code-cf .tag {
   color: #f12e58;
   text-rendering: optimizeLegibility;
 }
-span[class~="token"][class~="attribute"] .attribute {
-  color: #b1d13e;
+.code-cf .attribute {
+  color: orange;
 }
-span[class~="token"][class~="html-special"]{
+.code-cf .html-pecial {
   color: #8370f4;
 }

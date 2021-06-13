@@ -8,21 +8,21 @@
     tokenTypes: {}, // includes tokens except `OTHER` type
     
     /** takes parsed HTML string and wraps it in a `code` tag*/
-    finishUp: function (cfg, text, markuped) {
+    finishUp: function (cfg, text, markuped, container) {
       var complete;
       if (cfg.enableLineNumbering) {
         var lineCount = text.match(/\n/g)?.length + 1 || 1;
-        complete = "<table border=0><tr><td><pre class='cf-numberRow'>";
+        complete = "<code class='numberRow-cf'>";
         for (var i = 1; i <= lineCount; i++) {
           complete += i;
           if (i < lineCount) complete += "\n";
         }
         complete +=
-          '</pre></td><td><code class="cf-code">' +
+          '</code><code class="code-cf">' +
           markuped +
-          "</code></td></tr></table>";
+          "</code>";
       } else {
-        complete = '<code class="cf-code">' + markuped + "</code>";
+        complete = '<code class="code-cf" style="padding-left: 0px;">' + markuped + "</code>"
       }
       return complete;
     },
@@ -39,7 +39,7 @@
         out = tokenize(text),
         markuped = this.parse(out.tokens);
       time = window.performance.now() - time;
-      container.innerHTML = w.Colorful.finishUp(cfg, text, markuped);
+      container.innerHTML = w.Colorful.finishUp(cfg, text, markuped, container);
       var speed = ((text.length / 1024 / time) * 1000).toFixed(3); //kb/s
       console.log(
         `Language: ${lang}
@@ -54,7 +54,7 @@ total code analysed: ${(text.length / 1024).toFixed(3)} KiB\nfound: ${
     /**
    * parse tokens to generate html string
    * @param {Array} tokens array of tokens
-   * @return {String}
+   * @return {string}
    */
     parse: function parse(tokens) {
       var formatted = ``;
@@ -62,7 +62,7 @@ total code analysed: ${(text.length / 1024).toFixed(3)} KiB\nfound: ${
       for (var i = 0; i < tokens.length; i++) {
         var tkn = tokens[i],
           tokenType = tkn.type,
-          token = tkn.token.replaceSpecHTMLChars();
+          token = tkn.token.replace(/&/g, "&amp;").replace(/</g, "&lt;");
         if (tokenType != "OTHER") {
           formatted +=
             "<span class='token " + d[tokenType] + "'>" + token + "</span>";
@@ -72,17 +72,6 @@ total code analysed: ${(text.length / 1024).toFixed(3)} KiB\nfound: ${
       }
       return formatted;
     }
-  };
-
-  /**
-   * converts characters into html char codes
-   * "<" -> "&lt;"
-   * ">" -> "&gt;"
-   * "&" -> "&amp;"
-   * @returns string replacing some characters
-   */
-  String.prototype.replaceSpecHTMLChars = function () {
-    return this.replace(/&/g, "&amp;").replace(/</g, "&lt;");
   };
 
   /**
