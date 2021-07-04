@@ -1,9 +1,7 @@
 (function(w) {
   // check for core.js
   if (!window['Colorful']) {
-    console.error(
-        'Core part of library wasn\'t imported. Import it by adding script tag linking core.js`'
-    );
+    console.error('Core part of library wasn\'t imported. Import it by adding script tag linking core.js`');
     return;
   }
 
@@ -55,7 +53,7 @@
    *
    * @example tokenize("...", { breakOnBraceUnmatch:true }) // returns tokens when brace not matches or EOF reached
    */
-  function tokenize(text, ErrHandler = {}, EnderRE=null) {
+  function tokenize(text, ErrHandler = {}, EnderRE = null) {
     const len = text.length;
     let tokens = [];
     let word;
@@ -64,10 +62,11 @@
     const argScope = []; // cumulated scope number of arguments
     let scope = ''; // recent scope
     let i = 0;
+    let prevTkn;
+    let char;
     while (i < len) {
       word = text.substring(i).match(nameCharRE);
       let isNum;
-      let prevTkn;
       if (EnderRE && EnderRE.test(text.substring(i))) {
         return {tokens: tokens, inputEnd: i};
       }
@@ -91,7 +90,7 @@
       if (i == len) break; // break if EOF
       prevTkn = tokens[tokens.length - 1] || emptyToken; // previous token
       /* after matching a word there will be a non-unicode characters (punctuations, operators, etc.) that will follow word. Following code analyses it */
-      const char = text[i]; // next character
+      char = text[i]; // next character
       const next2 = text.substr(i, 2); // next two characters
       if (whitespace.test(char)) {
         // finds next whitespace characters
@@ -336,7 +335,7 @@
      * @param {string} word
      */
     function readWordToken(word) {
-      const prevt = prevTkn.token || '';
+      const prevt = (prevTkn.token || '').trim();
       if (
         KeywordRE.test(word) || // global keywords
         ((word == 'get' || word == 'set') &&
@@ -354,12 +353,21 @@
       } else if (
         (builtInObject.test(word) &&
           !/^(function|var|const|let|interface)/.test(prevt) &&
-          !/(\.\s*)$/.test(prevt)) ||
+          !/\.$/.test(prevt)) ||
         (word == 'constructor' && scopeTree[scopeTree.length - 1] == 'class')
       ) {
         // builtin objects word
         addToken(T_BUILTIN, word);
-      } else if (/(\.\s*)$/.test(prevt)) {
+      } else if (
+        prevt[prevt.length - 1] == '.' &&
+        (
+          /[)\]]/.test(prevt[prevt.length - 2]) ||
+          (
+            prevt.length == 1 &&
+            /^JS-(NAME|OBJECTPROP|ARGUMENT|BUILTIN|REGEX)$/.test((tokens[tokens.length - 2] || {}).type)
+          )
+        )
+      ) {
         // object property
         addToken(T_OBJECTPROP, word);
       } else if (argNames.indexOf(word) > -1 || word == 'arguments') {

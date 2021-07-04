@@ -5,14 +5,14 @@
  * @param {object} cfg
  * @return {string}
  */
-function parse(tokens, cfg={}) {
+function parse(tokens, cfg = {}) {
   const variables = cfg.variables || {};
   const removeComment = cfg.removeComment || false;
   const removeWS = cfg.removeWS || false;
   const windowVariables = variables.window || [];
   let parsed = '';
   let prevt = {};
-  if (!Array.isArray(tokens)) tokens = Colorful.tokenizers.JS(tokens);
+  if (!Array.isArray(tokens)) tokens = Colorful.tokenizers.JS(tokens).tokens;
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i];
     const content = token.token.trim();
@@ -25,7 +25,7 @@ function parse(tokens, cfg={}) {
       parsed = parsed.slice(0, parsed.length - 1);
       parsed += '["' + content + '"]' + ws;
     } else if (/JS-(NAME|METHOD)/.test(type) && windowVariables.indexOf(content) > -1) {
-      parsed += 'window["'+content+'"]' + ws;
+      parsed += 'window["' + content + '"]' + ws;
     } else {
       if (type == 'JS-COMMENT' && removeComment) continue;
       if (removeWS && type != 'JS-KEY') token.token = content;
@@ -44,4 +44,4 @@ Colorful.extensions.precisifier = parse;
 //   },
 //   removeComment: true,
 //   removeWS: true,
-// }));
+// }))

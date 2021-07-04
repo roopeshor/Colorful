@@ -6,6 +6,7 @@
     },
     tokenizers: {}, // tokenizers
     tokenTypes: {}, // includes tokens except `OTHER` type
+    extensions: {}, // includes tokens except `OTHER` type
     /**
      * Takes parsed HTML string and wraps it in a `code` tag
      *
