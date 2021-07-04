@@ -1,0 +1,26 @@
+{
+  "name": "colorful",
+  "version": "1.0.0",
+  "description": "JS Syntax highlighter\r Notes: Only use minified core.js file with minified file for specific file",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Roopesh2/Colorful.git"
+  },
+  "author": "Roopesh",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Roopesh2/Colorful/issues"
+  },
+  "homepage": "https://github.com/Roopesh2/Colorful#readme",
+  "devDependencies": {
+    "eslint": "^7.30.0",
+    "eslint-config-google": "^0.14.0"
+  }
+}

@@ -20,7 +20,7 @@
     T_UNIT = "CSS-UNIT",
     T_VALUE = "CSS-VALUE";
 
-  var operatorRE = /^[=!$^@~|-+*/%&:<>]+/;
+  var operatorRE = /^[!=$^@~|-+*/%&:<>]+/;
   var attributeRE = /^[^=]+/;
   var commentRE = /^(\/\*[\s\S]*\*\/|\/\*[\s\S]*)/;
   var selectorRE = /^[^{]+/;

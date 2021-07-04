@@ -1,4 +1,4 @@
-(function (w) {
+(function(w) {
   w.Colorful = {
     // default configuration
     config: {
@@ -6,86 +6,95 @@
     },
     tokenizers: {}, // tokenizers
     tokenTypes: {}, // includes tokens except `OTHER` type
-    
-    /** takes parsed HTML string and wraps it in a `code` tag*/
-    finishUp: function (cfg, text, markuped, container) {
-      var complete;
+    /**
+     * Takes parsed HTML string and wraps it in a `code` tag
+     *
+     * @param {object} cfg
+     * @param {string} text
+     * @param {string} markuped
+     * @param {HTMLElement} container
+     * @return {string}
+     */
+    finishUp: function finishUp(cfg, text, markuped, container) {
+      let complete;
       if (cfg.enableLineNumbering) {
-        var lineCount = text.match(/\n/g)?.length + 1 || 1;
-        complete = "<code class='numberRow-cf'>";
-        for (var i = 1; i <= lineCount; i++) {
+        const lineCount = (text.match(/\n/g) || []).length + 1 || 1;
+        complete = '<code class="numberRow-cf">';
+        for (let i = 1; i <= lineCount; i++) {
           complete += i;
-          if (i < lineCount) complete += "\n";
+          if (i < lineCount) complete += '\n';
         }
         complete +=
           '</code><code class="code-cf">' +
           markuped +
-          "</code>";
+          '</code>';
       } else {
-        complete = '<code class="code-cf" style="padding-left: 0px;">' + markuped + "</code>"
+        complete = '<code class="code-cf" style="padding-left: 0px;">' + markuped + '</code>';
       }
       return complete;
     },
 
     /**
      * combines tokenizer and parser
+     *
      * @param {HTMLElement} container
      * @param {Object} cfg
-    */
-    compile: function (container, cfg, lang) {
-      var text = container.innerText,
-        tokenize = this.tokenizers[lang],
-        time = window.performance.now(),
-        out = tokenize(text),
-        markuped = this.parse(out.tokens);
+     * @param {string} lang
+     */
+    compile: function compile(container, cfg, lang) {
+      const text = container.innerText;
+      const tokenize = this.tokenizers[lang];
+      let time = window.performance.now();
+      const out = tokenize(text);
+      const markuped = this.parse(out.tokens);
       time = window.performance.now() - time;
       container.innerHTML = w.Colorful.finishUp(cfg, text, markuped, container);
-      var speed = ((text.length / 1024 / time) * 1000).toFixed(3); //kb/s
+      const speed = ((text.length / 1024 / time) * 1000).toFixed(3); // kb/s
       console.log(
-        `Language: ${lang}
+          `Language: ${lang}
 total code analysed: ${(text.length / 1024).toFixed(3)} KiB\nfound: ${
-          out.tokens.length
-        } tokens\ncompile time: ${time.toFixed(
-          4
-        )} ms\ncompile speed: ${speed} KiB/s`
+    out.tokens.length
+  } tokens\ncompile time: ${time.toFixed(
+      4
+  )} ms\ncompile speed: ${speed} KiB/s`
       );
     },
 
     /**
-   * parse tokens to generate html string
-   * @param {Array} tokens array of tokens
-   * @return {string}
+     * parse tokens to generate html string
+     * @param {Array} tokens array of tokens
+     * @return {string}
    */
     parse: function parse(tokens) {
-      var formatted = ``;
-      var d = this.tokenTypes;
-      for (var i = 0; i < tokens.length; i++) {
-        var tkn = tokens[i],
-          tokenType = tkn.type,
-          token = tkn.token.replace(/&/g, "&amp;").replace(/</g, "&lt;");
-        if (tokenType != "OTHER") {
+      let formatted = ``;
+      const d = this.tokenTypes;
+      for (let i = 0; i < tokens.length; i++) {
+        const tkn = tokens[i];
+        const tokenType = tkn.type;
+        const token = tkn.token.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+        if (tokenType != 'OTHER') {
           formatted +=
-            "<span class='token " + d[tokenType] + "'>" + token + "</span>";
+            '<span class=\'token ' + d[tokenType] + '\'>' + token + '</span>';
         } else {
           formatted += token;
         }
       }
       return formatted;
-    }
+    },
   };
 
   /**
    * highlight all languages on page loads
    */
-  w.addEventListener("load", function () {
-    var langs = Object.keys(w.Colorful.tokenizers);
-    for (var i = 0; i < langs.length; i++) {
-      var lang = langs[i];
-      var codes = document.getElementsByClassName("cf-"+lang);
-      for (var k = 0; k < codes.length; k++) {
-        var block = codes[k];
-        var cfg = {
-          enableLineNumbering: block.hasAttribute("lineNumbering")
+  w.addEventListener('load', function() {
+    const langs = Object.keys(w.Colorful.tokenizers);
+    for (let i = 0; i < langs.length; i++) {
+      const lang = langs[i];
+      const codes = document.getElementsByClassName('cf-'+lang);
+      for (let k = 0; k < codes.length; k++) {
+        const block = codes[k];
+        const cfg = {
+          enableLineNumbering: block.hasAttribute('lineNumbering'),
         };
         window.Colorful.compile(codes[k], cfg, lang);
       }

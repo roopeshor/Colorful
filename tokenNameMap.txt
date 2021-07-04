@@ -1,0 +1,29 @@
+Token Name| css class  | Token Name in Minified files
+-----------------------------------------------------
+NAME      | "name"     | A
+OBJECTPROP| "objprop"  | B
+KEY       | "keyword"  | C
+COMMENT   | "comment"  | D
+NUMBER    | "number"   | E
+ARGUMENT  | "argument" | F
+BUILTIN   | "builtIn"  | G
+METHOD    | "method"   | H
+STRING    | "string"   | I
+REGEX     | "regex"    | J
+OPERATOR  | "operator" | K
+OTHER     | <null>     | L
+
+replacerObj = {
+  NAME      : A,
+  OBJECTPROP: B,
+  KEY       : C,
+  COMMENT   : D,
+  NUMBER    : E,
+  ARG       : F,
+  BUILTIN   : G,
+  METHOD    : H,
+  STRING    : I,
+  REGEX     : J,
+  OPERATOR  : K,
+  OTHER     : L
+}
