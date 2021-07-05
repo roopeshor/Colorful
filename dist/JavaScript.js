@@ -1,7 +1,406 @@
-(function(I){function J(h,B,w){function Q(){var d=c.length;c[d-1].a==(c[d-2]||{}).a&&c[d-1].c==(c[d-2]||{}).c&&((c[d-2].b+=c[d-1].b),c.pop());}function f(d,p){c.push({a:d,b:p,c:l.length});}function R(d,p){p=void 0===p?0:p;for(var K=0,C=0;C<d.length;C++){var x=d[C];(r!=x.a&&L!=x.a)||x.c!=p||u==(d[C-1]||{}).a||(K++,(x.a=D),E.push(x.b.trim()));}c=c.concat(d);K&&q.push(K+(q[q.length-1]||0)+1);v="function";}function W(d){var p=m.b||"";X.test(d)||(("get"==d||"set"==d)&&"class"==l[l.length-1])?(f(F,d),/(function|if|do|while|for|class|catch|else|finally|switch|try)/.test(d)&&(v=d)):(Y.test(d)&&!/^(function|var|const|let|interface)/.test(p)&&!/(\.\s*)$/.test(p))||("constructor"==d&&"class"==l[l.length-1])?f(L,d):/(\.\s*)$/.test(p)?f(y,d):-1<E.indexOf(d)||"arguments"==d? f(D,d):f(r,d);}B=void 0===B?{}:B;w=void 0===w?null:w;
-for(var M=h.length,c=[],a,l=[],E=[],q=[],v="",b=0;b<M;){a=h.substr(b).match(Z);if(w&&w.test(h.substr(b)))return{tokens:c,inputEnd:b};if(a){var g=a[0];a=g.match(N);var m=c[c.length-1]||O;a?((g=h.substr(b).match(N)[0]),f(z,g)):W(g);b+=g.length;Q();}else"."==h[b]&&/\d/.test(h[b+1])&&((a=h.substr(b).match(N)[0]),f(z,a),(b+=a.length));if(b==M)break;m=c[c.length-1]||O;var e=h[b];g=h.substr(b,2);if(S.test(e))(a=h.substr(b).match(S)[0]),m.b?(m.b+=a):f(r,a),(b+=a.length);else if("'"==e||'"'==e||"`"==e){f(A,e);b++;g=0;for(var k="'"==e?/^[^'\\]+/:'"'==e?/^[^"\\]+/:/^[^`\\${]+/;b<M;){if((a=h.substr(b).match(k)))f(A,a[0]),(b+=a[0].length),(g=0);a=h[b];if("\\"==a)(a=h.substr(b).match(/[\\]+/)[0]),f(A,a),(g+=a.length),(b+=a.length);else if(a==e){if((f(A,a),b++,0==g%2))break;}else if("${"==h.substr(b,2)){f(u,"${");b+=2;a=h.substr(b);
-var t=J(a,{braceUnmatch:!0});t.tokens.length&&(c=c.concat(t.tokens));b+=t.inputEnd;t.inputEnd!=a.length?(f(u,"}"),b++):"\n"==h[b-1]&&(c[c.length-1].b+="\n");}}}else if(aa.test(e))if(((a=h.substr(b)),(k=m.a),"//"==g||"/*"==g))(a=a.match(ba)[0]),(b+=a.length),f(P,a);else if("/"==e&&(r!=k||/^\s+$/.test(m.b))&&y!=k&&z!=k&&T.test(a))(g=!0),(k=(c[c.length-2]||{}).a),P!=m.a||(r!=k&&y!=k&&z!=k)||(g=!1),g?((a=a.match(T)[0]),f(U,a),(b+=a.length)):(f(u,e),b++);else if("=>"==g){if(r==m.a)(m.a=D),E.push(m.b.trim()),q.push((q[q.length-1]||0)+1),(v="function");else if(/\)\s*$/.test(m.b)){a=l.length;t=[c[c.length-1]];for(var G=c.length-2;0<=G;G--)if(((k=c[G]),t.push(k),H==k.a&&k.c==a)){c.splice(G);break;}t.reverse();R(t,a+1);}f(u,g);b+=2;}else f(u,e),b++;else if("("==e){a=m;k=a.a;g=c[c.length-2]||O;g=(a.b.match(/function\s*$/)&&F==k)||
-(g.b.match(/function\s*$/)&&F==g.a)||"class"==l[l.length-1];f(H,"(");b++;l.push("(");v="(";if(r==k||y==k)a.a=V;g&&((a=J(h.substr(b),{breakOnParenUnmatch:!0})),R(a.tokens),(b+=a.inputEnd));}else if("{"==e||"["==e)f(H,e),b++,l.push(v),(v=e);else{if("}"==e||")"==e||"]"==e)if(((a={"}":"braceUnmatch",")":"parenUnmatch","]":"bracketUnmatch",}),0<l.length))"}"==e&&q.length&&"function"==l[l.length-1]&&(E.splice(q[q.length-2]),q.pop()),l.pop();else if(B[a[e]])break;f(H,e);b++;}Q();}"\n"==e&&(c[c.length-1].b+="\n");return{tokens:c,inputEnd:b};}if(window.Colorful){var X=/^(async|await|break|case|catch|class|const|continue|debugger|default|delete|do|else|export|extends|false|finally|for|function|if|implements|import|in|instanceof|interface|let|new|null|package|return|static|super|switch|this|throw|true|try|typeof|undefined|var|void|while|with|yield)$/,
-N=/^((?:(?:0[xX](?:[\dA-Fa-f](?:_[\dA-Fa-f])?)+|0[bB](?:[01](?:_[01])?)+|0[oO](?:[0-7](?:_[0-7])?)+)n?|(?:\d(?:_\d)?)+n|NaN|Infinity)\b|(?:(?:\d(?:_\d)?)+\.?(?:\d(?:_\d)?)*|\B\.(?:\d(?:_\d)?)+)(?:[Ee][+-]?(?:\d(?:_\d)?)+)?)/,  ba=/(\/\*[\s\S]*?\*\/|\/\*[\s\S]*|\/\/.*)/,aa=/[-=+*/%!<>&|:?]/,Z=/^[\w\u00c0-\uffff$]+/u,T=/^\/((?![*+?])(?:[^\r\n\[/\\]|\\.|\[(?:[^\r\n\]\\]|\\.)*\])+)\/[gimyus]*/,Y=/^(AggregateError|Buffer|Array|ArrayBuffer|AsyncFunction|AsyncGenerator|AsyncGeneratorFunction|Atomics|BigInt|BigInt64Array|BigUint64Array|Boolean|DataView|Date|Error|EvalError|Float32Array|Float64Array|Function|Generator|GeneratorFunction|Int16Array|Int32Array|Int8Array|InternalError|Intl|JSON|Map|Math|Number|Object|Promise|Proxy|RangeError|ReferenceError|Reflect|RegExp|Set|SharedArrayBuffer|String|Symbol|SyntaxError|TypeError|URIError|Uint16Array|Uint32Array|Uint8Array|Uint8ClampedArray|WeakMap|WeakSet|WebAssembly)$/,
-S=/[\s]+/,O={a:"",b:""},r="JS-NAME",y="JS-OBJECTPROP",F="JS-KEY",P="JS-COMMENT",z="JS-NUMBER",D="JS-ARGUMENT",L="JS-BUILTIN",V="JS-METHOD",A="JS-STRING",U="JS-REGEX",u="JS-OPERATOR",H="JS-OTHER";I.Colorful.tokenizers.JS=J;I.Colorful.tokenTypes=Object.assign(I.Colorful.tokenTypes,{[r]:"name js-name",[y]:"objprop",[F]:"keyword js-keyword",[P]:"comment js-comment",[z]:"number js-number",[D]:"argument",[L]:"builtIn js-builtIn",[V]:"method js-method",[A]:"string js-string",[U]:"regex",
-[u]:"operator js-operator"});}else console.error("Core part of library wasn't imported. Import it by adding script tag linking core.js`");})(window);
+(function (w) {
+  // check for core.js
+  if (!window["Colorful"]) {
+    console["error"]("Core part of library wasn't imported. Import it by adding script tag linking core.js`");
+    return;
+  }
+
+  // RegExes
+  const KeywordRE =
+    /^(async|await|break|case|catch|class|const|continue|debugger|default|delete|do|else|export|extends|false|finally|for|function|if|implements|import|in|instanceof|interface|let|new|null|package|return|static|super|switch|this|throw|true|try|typeof|undefined|var|void|while|with|yield)$/;
+  const operatorRE = /[-=+*/%!<>&|:?]/;
+  const nameCharRE = /^[\wÀ-￿$]+/u; // \w, $ and from \u00c0 to \uffff
+
+  // modified regex from Prism: https://github.com/PrismJS/prism/blob/master/components/prism-javascript.js#L21
+  const number = /^((?:(?:0[xX](?:[\dA-Fa-f](?:_[\dA-Fa-f])?)+|0[bB](?:[01](?:_[01])?)+|0[oO](?:[0-7](?:_[0-7])?)+)n?|(?:\d(?:_\d)?)+n|NaN|Infinity)\b|(?:(?:\d(?:_\d)?)+\.?(?:\d(?:_\d)?)*|\B\.(?:\d(?:_\d)?)+)(?:[Ee][+-]?(?:\d(?:_\d)?)+)?)/;
+
+  const commentRE = /(\/\*[\s\S]*?\*\/|\/\*[\s\S]*|\/\/.*)/;
+  const regexRE =
+    /^\/((?![*+?])(?:[^\r\n[/\\]|\\.|\[(?:[^\r\n\]\\]|\\.)*\])+)\/[gimyus]*/;
+  // builtIn objects
+  const builtInObject =
+    /^(AggregateError|Buffer|Array|ArrayBuffer|AsyncFunction|AsyncGenerator|AsyncGeneratorFunction|Atomics|BigInt|BigInt64Array|BigUint64Array|Boolean|DataView|Date|Error|EvalError|Float32Array|Float64Array|Function|Generator|GeneratorFunction|Int16Array|Int32Array|Int8Array|InternalError|Intl|JSON|Map|Math|Number|Object|Promise|Proxy|RangeError|ReferenceError|Reflect|RegExp|Set|SharedArrayBuffer|String|Symbol|SyntaxError|TypeError|URIError|Uint16Array|Uint32Array|Uint8Array|Uint8ClampedArray|WeakMap|WeakSet|WebAssembly)$/;
+  const whitespace = /[\s]+/;
+  // types of tokens
+  const T_NAME = "JS-NAME";
+  const T_OBJECTPROP = "JS-OBJECTPROP";
+  //object property inside Object 
+  //eg: {a:3}
+  const T_OBJECTPROPINOBJ = "JS-OBJECTPROPINOBJ";
+  const T_KEY = "JS-KEY";
+  const T_COMMENT = "JS-COMMENT";
+  const T_NUMBER = "JS-NUMBER";
+  const T_ARGUMENT = "JS-ARGUMENT";
+  const T_BUILTIN = "JS-BUILTIN";
+  const T_METHOD = "JS-METHOD";
+  const T_STRING = "JS-STRING";
+  const T_REGEX = "JS-REGEX";
+  const T_OPERATOR = "JS-OPERATOR";
+  const T_OTHER = "JS-OTHER";
+  // an empty token
+  const emptyToken = {"type": "","token": "" };
+  const handler = {
+    "}": "breakOnBraceUnmatch",
+    ")": "breakOnParenUnmatch",
+    "]": "breakOnBracketUnmatch",
+  };
+  /**
+   * tokenize input text
+   * @param {string} text text to be tokenised
+   * @param {Object} [ErrHandler={}] defines how errors should be handled.
+   * Only handles bracket/brace/paren un matches only in one way: either break and return tokens or continue.
+   *
+   * possible values: {
+   *  breakOnBraceUnmatch: true/false,
+   *  breakOnParenUnmatch: true/false,
+   *  breakOnBracketUnmatch: true/false
+   * }
+   * @param {RegExp} EnderRE ends parsing at this expression.
+   *                         used in parseing JS code inside HTML code
+   * @return {Object}
+   *
+   * @example tokenize("...", { breakOnBraceUnmatch:true }) // returns tokens when brace not matches or EOF reached
+   */
+  function tokenize(text, ErrHandler = {}, EnderRE = null) {
+    const len = text.length;
+    let tokens = [];
+    let word;
+    const scopeTree = []; // list like structure defines where current tokenisation is happening
+    const argNames = []; // list of argument names
+    const argScope = []; // cumulated scope number of arguments
+    let scope = ""; // recent scope
+    let i = 0;
+    let prevTkn;
+    let char;
+    while (i < len) {
+      // debugger;
+      word = text["substring"](i).match(nameCharRE);
+      let isNum;
+      if (EnderRE && EnderRE["test"](text["substring"](i))) {
+        return {"tokens": tokens,"inputEnd": i };
+      }
+      if (word) {
+        let v = word[0];
+        isNum = v["match"](number);
+        prevTkn = tokens[tokens.length - 1] || emptyToken;
+        if (isNum) {
+          v = text["substring"](i).match(number)[0];
+          addToken(T_NUMBER, v);
+        } else {
+          readWordToken(v);
+        }
+        i += v.length;
+        mergeSameTypes();
+      } else if (text[i] == "." && /\d/["test"](text[i + 1])) {
+        const w = text["substring"](i).match(number)[0];
+        addToken(T_NUMBER, w);
+        i += w.length;
+      }
+      if (i == len) break; // break if EOF
+      prevTkn = tokens[tokens.length - 1] || emptyToken; // previous token
+      /* after matching a word there will be a non-unicode characters (punctuations, operators, etc.) that will follow word. Following code analyses it */
+      char = text[i]; // next character
+      const next2 = text["substr"](i, 2); // next two characters
+      if (whitespace["test"](char)) {
+        // finds next whitespace characters
+        const space = text["substring"](i).match(whitespace)[0];
+        if (prevTkn["token"]) prevTkn["token"] += space;
+        // if a token exists in the list add whitespaces to it
+        else addToken(T_NAME, space); // if there is no previous tokens
+        i += space.length;
+      } else if (char == "'" || char == "\"" || char == "`") {
+        // string ahead
+
+        addToken(T_STRING);
+        i++;
+
+        let str;
+        let slashes = 0; // number of backslashes
+        // regular expression that is used to match all characters except the string determiner and backslashes
+        const re =
+          char == "'" ? /^[^'\\]+/ : char == "\"" ? /^[^"\\]+/ : /^[^`${]+/;
+        while (i < len) {
+          str = text["substring"](i).match(re);
+          if (str) {
+            addToken(T_STRING, str[0]);
+            i += str[0].length;
+            slashes = 0;
+          }
+          const ch = text[i];
+          if (ch == "\\") {
+            const slsh = text["substring"](i).match(/[\\]+/)[0];
+            addToken(T_STRING, slsh);
+            slashes += slsh.length;
+            i += slsh.length;
+          } else if (ch == char) {
+            addToken(T_STRING, ch);
+            i++;
+            if (slashes % 2 == 0) break; // even number of # of backslashes means string character is not escaped
+            else slashes = 0; // else reset it
+          } else if (text["substr"](i, 2) == "${") {
+            // only for multiline string
+            // string interpolation ahead
+            addToken(T_OPERATOR, "${"); // adds `${` as operator
+            i += 2;
+            const nxt = text["substring"](i); // text left to parse except `${`
+            const out = tokenize(nxt, {"breakOnBraceUnmatch": true }); // tokenises code left
+            if (out["tokens"].length) tokens = tokens["concat"](out["tokens"]);
+            i += out["inputEnd"];
+            if (out["inputEnd"] != nxt.length) {
+              // if tokenization was completed due to an unmatched brace add `}` after everything
+              addToken(T_OPERATOR, "}");
+              i++;
+            } else if (text[i - 1] == "\n") {
+              tokens[tokens.length - 1]["token"] += "\n"; // quick fix
+            }
+          }
+        }
+      } else if (operatorRE["test"](char)) {
+        const nxt = text["substring"](i);
+        const prevt = prevTkn["type"];
+        if (next2 == "//" || next2 == "/*") {
+          // comment ahead
+          const comment = nxt["match"](commentRE)[0];
+          i += comment.length;
+          addToken(T_COMMENT, comment);
+        } else if (char == "/" && !(
+          (prevt == T_NAME && !/^\s+$/["test"](prevTkn["token"])) ||
+          prevt == T_OBJECTPROP ||
+          prevt == T_NUMBER
+        ) && regexRE["test"](nxt)) {
+          // regular expression ahead
+          let regExAhead = true;
+          const tk = (tokens[tokens.length - 2] || {})["type"];
+          if (
+            prevTkn["type"] == T_COMMENT &&
+            (tk == T_NAME || tk == T_OBJECTPROP || tk == T_NUMBER)
+          ) {
+            regExAhead = false;
+          }
+          if (regExAhead) {
+            const reg = nxt["match"](regexRE)[0];
+            addToken(T_REGEX, reg);
+            i += reg.length;
+          } else {
+            // operator
+            addToken(T_OPERATOR);
+            i++;
+          }
+        } else if (next2 == "=>") {
+          // arrow expression
+          if (prevTkn["type"] == T_NAME) {
+            /* highlights single argument
+              arg => {...}
+              ^^^
+            */
+            prevTkn["type"] = T_ARGUMENT;
+            argNames["push"](prevTkn["token"]["trim"]()); // trim the token to get arguments name
+            argScope["push"]((argScope[argScope.length - 1] || 0) + 1);
+            scope = "function"; // after this should be a function
+          } else if (/\)\s*$/["test"](prevTkn["token"])) {
+            /* reads multiple arguments
+              (arg1, arg2, argn) => {...}
+               ^^^^  ^^^^  ^^^^
+            */
+            const initialScopeLevel = scopeTree.length; // current scope
+            const toReadArray = [tokens[tokens.length - 1]]; // array of tokens to read
+            for (let k = tokens.length - 2; k >= 0; k--) {
+              const tk = tokens[k];
+              toReadArray["push"](tk);
+              if (tk["type"] == T_OTHER && tk["scopeLevel"] == initialScopeLevel) {
+                // reached `(`
+                tokens["splice"](k);
+                break;
+              }
+            }
+            // reverse the array
+            toReadArray["reverse"]();
+            // reads arguments
+            readArgumentsInTokens(toReadArray, initialScopeLevel + 1);
+          }
+          addToken(T_OPERATOR, next2); // add `=>` to tokens
+          i += 2;
+        } else {
+          addToken(T_OPERATOR); // regular operator
+          i++;
+          if (char == ":" && scopeTree[scopeTree.length-1] == "{" && prevTkn["type"] == T_NAME) {
+            prevTkn["type"] = T_OBJECTPROPINOBJ;
+          }
+        }
+      } else if (char == "(") {
+        // function name
+        const prev = prevTkn;
+        const prevt = prev["type"];
+        const pprev = tokens[tokens.length - 2] || emptyToken;
+        const isFunctionClause =
+          (prev["token"]["match"](/function\s*$/) && prevt == T_KEY) ||
+          (pprev["token"]["match"](/function\s*$/) && pprev["type"] == T_KEY) ||
+          scopeTree[scopeTree.length - 1] == "class";
+        addToken(T_OTHER);
+        i++;
+        scopeTree["push"]("(");
+        scope = "(";
+        // makes name of function colored to method
+        if (prevt == T_NAME || prevt == T_OBJECTPROP) {
+          prev["type"] = T_METHOD;
+        }
+        if (isFunctionClause) {
+          // reads arguments
+          const tkn = tokenize(text["substring"](i), {"breakOnParenUnmatch": true });
+          const tkns = tkn["tokens"];
+          readArgumentsInTokens(tkns);
+          i += tkn["inputEnd"];
+        }
+      } else if (char == "{" || char == "[") {
+        addToken(T_OTHER, char);
+        i++;
+        if (scope == "" || scope.length == 1) scope = char;
+        scopeTree["push"](scope);
+        scope = char;
+      } else if (char == "}" || char == ")" || char == "]") {
+        if (scopeTree.length > 0) {
+          if (
+            char == "}" &&
+            argScope.length &&
+            scopeTree[scopeTree.length - 1] == "function"
+          ) {
+            argNames["splice"](argScope[argScope.length - 2]);
+            argScope["pop"]();
+          }
+          scopeTree["pop"]();
+        } else if (ErrHandler[handler[char]]) {
+          break;
+        }
+        addToken(T_OTHER);
+        i++;
+      } else {
+        addToken(T_OTHER);
+        i++;
+      }
+      mergeSameTypes();
+    }
+    if (char == "\n") tokens[tokens.length - 1]["token"] += "\n"; // quick fix
+    return {"tokens": tokens,"inputEnd": i };
+    /**
+     * merges same type of consecutive tokens into
+     * single one to minimize tokens to parse
+     */
+    function mergeSameTypes() {
+      const tl = tokens.length;
+      if (
+        tokens[tl - 1]["type"] == (tokens[tl - 2] || {})["type"] &&
+        tokens[tl - 1]["scopeLevel"] == (tokens[tl - 2] || {})["scopeLevel"] &&
+        tokens[tl - 1]["type"] != T_OTHER
+      ) {
+        tokens[tl - 2]["token"] += tokens[tl - 1]["token"];
+        tokens["pop"]();
+      }
+    }
+    /**
+     * push token to tokenList
+     *
+     * @param {*} type
+     * @param {*} token
+     */
+    function addToken(typ, tkn = char) {
+      tokens["push"]({
+       "type": typ,
+       "token": tkn,
+       "scopeLevel": scopeTree.length,
+      });
+    }
+
+    /**
+     * read arguments in given token list
+     *
+     * @param {string} tks
+     * @param {number} [base=0]
+     */
+    function readArgumentsInTokens(tks, base = 0) {
+      let nos = 0;
+      for (let k = 0; k < tks.length; k++) {
+        const tk = tks[k];
+        if (
+          (tk["type"] == T_NAME || tk["type"] == T_BUILTIN) &&
+          tk["scopeLevel"] == base &&
+          (tks[k - 1] || {})["type"] != T_OPERATOR
+        ) {
+          nos++;
+          tk["type"] = T_ARGUMENT;
+          argNames["push"](tk["token"]["trim"]());
+        }
+      }
+      tokens = tokens["concat"](tks);
+      if (nos) argScope["push"](nos + (argScope[argScope.length - 1] || 0) + 1);
+      scope = "function";
+    }
+
+    /**
+     * finds the type of word given
+     *
+     * @param {string} word
+     */
+    function readWordToken(word) {
+      const prevt = (prevTkn["token"] || "").trim();
+      const p2revt = (tokens[tokens.length - 2] || {});
+      if (
+        KeywordRE["test"](word) || // global keywords
+        ((word == "get" || word == "set") &&
+          scopeTree[scopeTree.length - 1] == "class") // get/set inside class scope
+      ) {
+        // Keyword
+        addToken(T_KEY, word);
+        if (
+          /(function|if|do|while|for|class|catch|else|finally|switch|try)/["test"](
+            word
+          )
+        ) {
+          scope = word;
+        }
+      } else if (
+        (builtInObject["test"](word) &&
+          !/^(function|var|const|let|interface)/["test"](prevt) &&
+          !/\.$/["test"](prevt)) ||
+        (word == "constructor" && scopeTree[scopeTree.length - 1] == "class")
+      ) {
+        // builtin objects word
+        addToken(T_BUILTIN, word);
+      } else if (
+        prevt[prevt.length - 1] == "." &&
+        (
+          /[)\]]/["test"](p2revt["token"]) ||
+          (
+            prevt.length == 1 &&
+            /^JS-(NAME|OBJECTPROP|ARGUMENT|BUILTIN|REGEX)$/["test"](p2revt["type"])
+          )
+        )
+      ) {
+        // object property
+        addToken(T_OBJECTPROP, word);
+      } else if (argNames["indexOf"](word) > -1 || word == "arguments") {
+        // argument inside function clause
+        addToken(T_ARGUMENT, word);
+      } else {
+        addToken(T_NAME, word);
+      }
+    }
+  }
+
+  w["Colorful"]["tokenizers"]["JS"] = tokenize;
+
+  // add types of token used here to tokenType object for parser to classify tokens
+  w["Colorful"]["tokenTypes"] = Object["assign"](w["Colorful"]["tokenTypes"], {
+    [T_NAME]: "name js-name",
+    [T_OBJECTPROP]: "objprop",
+    [T_OBJECTPROPINOBJ]: "objprop objectpropinobj",
+    [T_KEY]: "keyword js-keyword",
+    [T_COMMENT]: "comment js-comment",
+    [T_NUMBER]: "number js-number",
+    [T_ARGUMENT]: "argument",
+    [T_BUILTIN]: "builtIn js-builtIn",
+    [T_METHOD]: "method js-method",
+    [T_STRING]: "string js-string",
+    [T_REGEX]: "regex",
+    [T_OPERATOR]: "operator js-operator",
+  });
+})(window);

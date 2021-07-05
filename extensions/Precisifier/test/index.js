@@ -1,47 +1,129 @@
-/**
- *
- *
- * @param {array} tokens
- * @param {object} cfg
- * @return {string}
- */
-function parse(tokens, cfg={}) {
-  const variables = cfg.variables || {};
-  const removeComment = cfg.removeComment || false;
-  const removeWS = cfg.removeWS || false;
-  const windowVariables = variables.window || [];
-  let parsed = '';
-  let prevt = {};
-  if (!Array.isArray(tokens)) tokens = Colorful.tokenizers.JS(tokens);
-  for (let i = 0; i < tokens.length; i++) {
-    const token = tokens[i];
-    const content = token.token.trim();
-    const type = token.type;
+/*global $*/
 
-    // whitespace
-    const ws = removeWS ? '' : token.token.substr(content.length);
-
-    if (type == 'JS-OBJECTPROP' || (type == 'JS-METHOD' && (/[)\]]/.test(prevt[prevt.length - 2]) || (prevt == '.' && /^JS-(NAME|OBJECTPROP|ARGUMENT|METHOD|BUILTIN|REGEX)$/.test((tokens[i - 2] || {}).type))))) {
-      parsed = parsed.slice(0, parsed.length - 1);
-      parsed += '["' + content + '"]' + ws;
-    } else if (/JS-(NAME|METHOD)/.test(type) && windowVariables.indexOf(content) > -1) {
-      parsed += 'window["'+content+'"]' + ws;
-    } else {
-      if (type == 'JS-COMMENT' && removeComment) continue;
-      if (removeWS && type != 'JS-KEY') token.token = content;
-      parsed += token.token;
-    }
-    prevt = content;
+const Configs = {
+  variables: {
+    window: []
+  },
+  removeComment: false,
+  removeWS: false,
+  replace: {
+    objectProperty: {},
+    global: {},
   }
-  return parsed;
+};
+
+const windowVariableItem = $("#windowVariableItem"); // input:text
+const windowVarAddBtn = $("#window-var-add-btn"); // input:button
+const windowVariableListUl = $("#output-window-vars"); // ul
+
+const varNameBefore = $("#varNameBefore"); // input:text
+const varNameAfter = $("#varNameAfter"); // input:text
+const isObjectProprty = $("#isObjectProprty"); // input:checkbox
+const replacerAddBtn = $("#replacer-add-btn"); // input:button
+const replacerVariableListUl = $("#output-replacer-vars"); // ul
+
+const removeComment = $("#removeComment"); // input:checkbox
+const removeWS = $("#removeWS"); // input:checkbox
+
+const globalFlag = "<span class='g-flag'>g</span>";
+
+windowVariableItem.onEnter(addWindowVarEF);
+replacerAddBtn.onClick(addReplacerVarEF);
+windowVarAddBtn.onClick(addWindowVarEF);
+
+varNameBefore.onEnter(addReplacerVarEF);
+varNameAfter.onEnter(addReplacerVarEF);
+
+removeComment.onChange(() => {
+  Configs.removeComment = removeComment.checked();
+});
+removeWS.onChange(() => {
+  Configs.removeWS = removeWS.checked();
+});
+
+
+// adders
+function addReplacerVarEF() {
+  var before = varNameBefore.value();
+  var after = varNameAfter.value();
+  addReplacerVar(before, after, !isObjectProprty.checked());
+}
+function addWindowVarEF() {
+  var item = windowVariableItem.value();
+  addWindowVar(item);
 }
 
-Colorful.extensions.precisifier = parse;
-// possible configs
-// console.log(parse(TOKENS, {
-//   variables: {
-//     window: ['C'],
-//   },
-//   removeComment: true,
-//   removeWS: true,
-// }));
+
+function addReplacerVar(before, after, isGlobal = true) {
+  let toLook = Configs.replace.global;
+  let beforeClearImg = globalFlag;
+  let classes = "";
+  if (!isGlobal) {
+    toLook = Configs.replace.objectProperty;
+    beforeClearImg = "";
+    classes = "obj-prop";
+  }
+  if (!toLook[before]) {
+    replacerVariableListUl.addHTML(li(
+      "<code class='name-inline replacer-before'>" + before + "</code> as <code class='name-inline replacer-after'>" + after + "</code>",
+      "r" + before,
+      "removeFromReplacer",
+      beforeClearImg, classes));
+    toLook[before] = after;
+  }
+}
+function addWindowVar(_var) {
+  if (Configs.variables.window.indexOf(_var) < 0) {
+    windowVariableListUl.addHTML(li(
+      _var,
+      "w" + Configs.variables.window.length,
+      "removeWinVarItem"));
+    Configs.variables.window.push(_var);
+  }
+}
+
+/**
+ * returns li element
+ *
+ * @param {string} content
+ * @param {string} id
+ * @param {string} removerFunction
+ * @param {string} prefiximg
+ * @param {string} [classes=""]
+ * @return {string}  
+ */
+function li(content, id, removerFunction, prefiximg, classes = "") {
+  return "<li id='" + id + "' class='" + classes + "'><span>" + content + "</span>" + clearIcon(id, removerFunction, prefiximg) + "</li>";
+}
+/**
+ * retruns html of clear icon
+ *
+ * @param {string} id
+ * @param {string} removerFunction remover
+ * @param {string} [prefiximg=""] thing to add before img
+ * @return {string}  
+ */
+function clearIcon(id, removerFunction, prefiximg = "") {
+  return "<span class='img-clear-container'>" + prefiximg + "<img src='./media/ic_clear.svg' class='icon clear' onclick='" + removerFunction + "(\"" + id + "\")'></span>";
+}
+
+
+
+// removers
+
+function removeFromReplacer(id) {
+  const elem = $("#" + id);
+  const classList = elem.classList();
+  if (classList.contains("obj-prop")) {
+    delete Configs.replace.objectProperty[id.substr(1)];
+  } else {
+    delete Configs.replace.global[id.substr(1)];
+  }
+  elem.remove();
+}
+
+function removeWinVarItem(id) {
+  const index = Number(id.substr(1));
+  delete Configs.variables.window[index];
+  document.getElementById(id).remove();
+}

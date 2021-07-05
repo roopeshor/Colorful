@@ -1,0 +1,125 @@
+:root {
+  --bg-color: #fefefe;
+  --text-color: #000;
+  --border-color: #000;
+  --bg-list-color: #dbf9ff;
+  --replacer-before-color: #fd7200;
+  --replacer-after-color: #0400fd;
+}
+
+body {
+  font-family: sans-serif;
+  padding: 10px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+.windowVars {
+  width: 100%;
+}
+#windowVariableItem {
+  min-width: 220px;
+}
+
+.varWidth {
+  max-width: fit-content;
+}
+input,
+textarea,
+button {
+  outline: none;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+input[type="text"] {
+  border: none;
+  border-bottom: 2px solid #0aaaff;
+}
+.btn-finish {
+  background-color: #0aaaff;
+  border: none;
+  border-radius: 7px;
+  padding: 5px;
+  margin: 5px;
+}
+.btn-finish:focus {
+  border: 1px solid var(--border-color);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+}
+.column {
+  border: 1px solid var(--border-color);
+  margin: 5px;
+  padding: 5px;
+  flex-grow: 1;
+}
+
+ul {
+  padding: 0;
+}
+li {
+  display: flex;
+  justify-content: space-between;
+  background-color: var(--bg-list-color);
+  padding: 5px;
+  width: 50%;
+  margin: 2px;
+  border-radius: 5px;
+}
+
+.name-inline {
+  margin: 0 10px;
+  font-size: 15px;
+}
+.replacer-before {
+  color: var(--replacer-before-color);
+}
+
+.replacer-after {
+  color: var(--replacer-after-color);
+}
+
+.icon {
+  width: 18px;
+}
+.g-flag {
+  color: rgb(0, 248, 62);
+  font-weight: bold;
+}
+.img-clear-container {
+  display: inline-flex;
+}
+.img-clear-container > .g-flag {
+  margin-right: 5px;
+}
+.texteditor,
+#code {
+  width: calc(100% - 20px);
+  margin: 5px;
+  padding: 5px;
+  height: 200px;
+}
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.toggle-dark-mode {
+  display: none;
+}
+.label {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  background-image: url("./media/ic_dark.svg");
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.toggle-dark-mode:checked + .label {
+  background-image: url("./media/ic_white.svg");
+  background-repeat: no-repeat;
+  background-size: cover;
+}
