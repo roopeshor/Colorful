@@ -17,7 +17,7 @@
        */
       elem.on = function (type, _function, options) {
         elem.addEventListener(type, _function, options);
-      }
+      };
       
       /**
        * Attach a event listener that runs when Enter key is Pressed
@@ -29,8 +29,8 @@
             fun(evt);
           }
         });
-      }
+      };
     }
-    return elem
+    return elem;
   };
 })();

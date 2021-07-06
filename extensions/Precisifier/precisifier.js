@@ -13,45 +13,58 @@ function parse(tokens, cfg = {}) {
   const toReplaceAsObjProp = (cfg.replace || {}).objectProperty || {};
   const toReplaceAsglobal = (cfg.replace || {}).global || {};
   let parsed = "";
-  let prevt = {};
   if (!Array.isArray(tokens)) tokens = Colorful.tokenizers.JS(tokens).tokens;
+  console.log(tokens);
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i];
     let content = token.token.trim();
     const type = token.type;
 
     // whitespace
-    const ws = removeWS ? "" : token.token.substr(content.length);
+    let ws = removeWS ? "" : token.token.substr(content.length);
 
-    if (type == "JS-OBJECTPROP") {
+    if (type == "JS-COMMENT" && removeComment) {
+      continue;
+    } else if (/JS-(OBJECTPROP|OBJECTPROPINOBJ|METHODASOBJPROP)/.test(type)) {
       let replacer = toReplaceAsObjProp[content];
       if (replacer) content = replacer;
-      addNameInSurrounder(content, ws);
-    } else if (type == "JS-OBJECTPROPINOBJ") {
-      let replacer = toReplaceAsObjProp[content];
-      if (replacer) content = replacer;
-      addNameInSurrounder(content, ws, "\"");
-    } else if (type == "JS-METHOD" && (/[)\]]/.test(prevt[prevt.length - 2]) || (prevt == "." && /^JS-(NAME|OBJECTPROP|ARGUMENT|METHOD|BUILTIN|REGEX)$/.test((tokens[i - 2] || {}).type)))) {
-      addNameInSurrounder(content, ws);
-    } else if (/JS-(NAME|METHOD)/.test(type) && windowVariables.indexOf(content) > -1) {
-      parsed += "window[\"" + content + "\"]" + ws;
     } else if (type == "JS-NAME") {
       let replacer = toReplaceAsglobal[content];
       if (replacer) token.token = token.token.replace(content, replacer);
-      parsed += token.token;
+    }
+
+    if (removeWS && type != "JS-KEY") {
+      token.token = content;
+      ws = "";
+    }
+
+    if (/^JS-(OBJECTPROP|METHODASOBJPROP)$/.test(type)) {
+      addNameInSurrounder(content, ws, "[", true);
+    } else if (type == "JS-OBJECTPROPINOBJ") {
+      addNameInSurrounder(content, ws, "'", false);
+    } else if (
+      /JS-(NAME|METHOD)/.test(type) &&
+      windowVariables.indexOf(content) > -1
+    ) {
+      parsed += "window";
+      addNameInSurrounder(content, ws, "[", false);
     } else {
-      if (type == "JS-COMMENT" && removeComment) continue;
-      if (removeWS && type != "JS-KEY") token.token = content;
       parsed += token.token;
     }
-    prevt = content;
   }
   return parsed;
 
-  function addNameInSurrounder(content, ws, surrounder="[") {
-    parsed = parsed.slice(0, parsed.length - 1);
-    if (surrounder == "[") parsed += "[\"" + content + "\"]" + ws;
-    else if (/["'']/.test(surrounder)) parsed += surrounder + content + surrounder + ws;
+  function addNameInSurrounder(
+    content,
+    ws,
+    surrounder = "[",
+    removeLastChar
+  ) {
+    if (removeLastChar) parsed = parsed.slice(0, parsed.length - 1);
+
+    if (surrounder == "[") parsed += "['" + content + "']" + ws;
+    else if (/["'']/.test(surrounder))
+      parsed += surrounder + content + surrounder + ws;
   }
 }
 

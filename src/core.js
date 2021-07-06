@@ -29,7 +29,7 @@
           markuped +
           "</code>";
       } else {
-        complete = "<code class='code-cf' style='padding-left: 0px;'>" + markuped + "</code>";
+        complete = "<code class='code-cf'>" + markuped + "</code>";
       }
       return complete;
     },

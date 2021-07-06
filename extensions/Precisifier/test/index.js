@@ -25,40 +25,40 @@ const replacerVariableListUl = $("#output-replacer-vars"); // ul
 const removeComment = $("#removeComment"); // input:checkbox
 const removeWS = $("#removeWS"); // input:checkbox
 
-const codeTextarea = $("#code") // textarea
-const compileBtn = $("#compile") // button
-const codeOutput = $("#output-code") // pre
+const codeTextarea = $("#code"); // textarea
+const compileBtn = $("#compile"); // button
+const codeOutput = $("#output-code"); // pre
 
 const globalFlag = "<span class='g-flag'>g</span>";
 
 windowVariableItem.onEnter(addWindowVarEF);
-replacerAddBtn.onClick = addReplacerVarEF;
-windowVarAddBtn.onClick = addWindowVarEF;
+replacerAddBtn.on("click", addReplacerVarEF);
+windowVarAddBtn.on("click", addWindowVarEF);
 
 compileBtn.on("click", () => {
   var codeToCompile = codeTextarea.innerText;
   if (codeToCompile.length) {
     codeOutput.innerText = Colorful.extensions.precisifier(codeToCompile, Configs);
-    Colorful.compile(codeOutput, {}, "JS")
+    Colorful.compile(codeOutput, {}, "JS");
   }
 });
 
 varNameBefore.onEnter(addReplacerVarEF);
 varNameAfter.onEnter(addReplacerVarEF);
 
-removeComment.onChange = () => {
+removeComment.on("change", () => {
   Configs.removeComment = removeComment.checked;
-}
-removeWS.onChange = () => {
+});
+removeWS.on("change", () => {
   Configs.removeWS = removeWS.checked;
-}
+});
 
 
 // adders
 function addReplacerVarEF() {
   var before = varNameBefore.value;
   var after = varNameAfter.value;
-  addReplacerVar(before, after, !isObjectProprty.checked());
+  addReplacerVar(before, after, !isObjectProprty.checked);
 }
 function addWindowVarEF() {
   var item = windowVariableItem.value;
@@ -86,7 +86,7 @@ function addReplacerVar(before, after, isGlobal = true) {
 }
 function addWindowVar(_var) {
   if (Configs.variables.window.indexOf(_var) < 0) {
-    windowVariableListUl.inneeHTML += li(
+    windowVariableListUl.innerHTML += li(
       _var,
       "w" + Configs.variables.window.length,
       "removeWinVarItem");

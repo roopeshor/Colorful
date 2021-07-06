@@ -24,8 +24,8 @@
   // types of tokens
   const T_NAME = "JS-NAME";
   const T_OBJECTPROP = "JS-OBJECTPROP";
-  //object property inside Object 
-  //eg: {a:3}
+  // object property inside Object 
+  // eg: {a:3}
   const T_OBJECTPROPINOBJ = "JS-OBJECTPROPINOBJ";
   const T_KEY = "JS-KEY";
   const T_COMMENT = "JS-COMMENT";
@@ -33,6 +33,9 @@
   const T_ARGUMENT = "JS-ARGUMENT";
   const T_BUILTIN = "JS-BUILTIN";
   const T_METHOD = "JS-METHOD";
+
+  // method as object property (e.g: console.log())
+  const T_METHODASOBJPROP = "JS-METHODASOBJPROP";
   const T_STRING = "JS-STRING";
   const T_REGEX = "JS-REGEX";
   const T_OPERATOR = "JS-OPERATOR";
@@ -231,7 +234,7 @@
         // function name
         const prev = prevTkn;
         const prevt = prev.type;
-        const pprev = tokens[tokens.length - 2] || emptyToken;
+        const pprev = tokens.slice(-2)[0] || emptyToken;
         const isFunctionClause =
           (prev.token.match(/function\s*$/) && prevt == T_KEY) ||
           (pprev.token.match(/function\s*$/) && pprev.type == T_KEY) ||
@@ -243,6 +246,9 @@
         // makes name of function colored to method
         if (prevt == T_NAME || prevt == T_OBJECTPROP) {
           prev.type = T_METHOD;
+          if (isObjectProprty(pprev.token, tokens.slice(-4)[0])) {
+            prev.type = T_METHODASOBJPROP;
+          }
         }
         if (isFunctionClause) {
           // reads arguments
@@ -335,6 +341,28 @@
       scope = "function";
     }
 
+
+    /**
+     * checks if the current context is object property
+     * @param {string} previousToken 
+     * @param {Object} _2ndLastToken 2nd last token
+     * @returns {boolean}
+    */
+    function isObjectProprty (previousToken, _2ndLastToken) {
+      return previousToken == "." &&
+        (
+          /[)\]]/.test(_2ndLastToken.token) ||
+          (
+            previousToken.length == 1 &&
+            (
+              /^JS-(NAME|OBJECTPROP|ARGUMENT|BUILTIN|REGEX)$/.test(_2ndLastToken.type) ||
+              // for this.someProperty or false.someProperties
+              /(this|false|true)/.test(_2ndLastToken.token)
+            )
+          )
+        );
+    }
+
     /**
      * finds the type of word given
      *
@@ -365,20 +393,7 @@
       ) {
         // builtin objects word
         addToken(T_BUILTIN, word);
-      } else if (
-        prevt.slice(-1) == "." &&
-        (
-          /[)\]]/.test(p2revt.token) ||
-          (
-            prevt.length == 1 &&
-            (
-              /^JS-(NAME|OBJECTPROP|ARGUMENT|BUILTIN|REGEX)$/.test(p2revt.type) ||
-              // for this.someProperty or false.someProperties
-              /(this|false|true)/.test(p2revt.token)
-            )
-          )
-        )
-      ) {
+      } else if (isObjectProprty(prevt, p2revt)) {
         // object property
         addToken(T_OBJECTPROP, word);
       } else if (argNames.indexOf(word) > -1 || word == "arguments") {
@@ -396,13 +411,14 @@
   w["Colorful"]["tokenTypes"] = Object.assign(w["Colorful"]["tokenTypes"], {
     [T_NAME]: "name js-name",
     [T_OBJECTPROP]: "objprop",
-    [T_OBJECTPROPINOBJ]: "objprop objectpropinobj",
+    [T_OBJECTPROPINOBJ]: "objprop object-prop-in-obj",
     [T_KEY]: "keyword js-keyword",
     [T_COMMENT]: "comment js-comment",
     [T_NUMBER]: "number js-number",
     [T_ARGUMENT]: "argument",
     [T_BUILTIN]: "builtIn js-builtIn",
     [T_METHOD]: "method js-method",
+    [T_METHODASOBJPROP]: "method js-method method-as-obj-prop",
     [T_STRING]: "string js-string",
     [T_REGEX]: "regex",
     [T_OPERATOR]: "operator js-operator",
