@@ -24,7 +24,7 @@ body {
   max-width: fit-content;
 }
 input,
-textarea,
+pre,
 button {
   outline: none;
   background-color: var(--bg-color);
@@ -122,4 +122,28 @@ header {
   background-image: url("./media/ic_white.svg");
   background-repeat: no-repeat;
   background-size: cover;
+}
+
+.checklists {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#btn-copy-output {
+  height: 30px;
+}
+
+#output-code, #code {
+  width: 100%;
+  border: 1px solid var(--border-color);
+}
+
+#output-code > * {
+  width: 100%;
 }

@@ -20,8 +20,8 @@ const colors = {
 };
 
 const darkModeToggle = $(".toggle-dark-mode");
-darkModeToggle.onChange(() => {
-  setColor(darkModeToggle.checked() ? "dark" : "light");
+darkModeToggle.on("change", () => {
+  setColor(darkModeToggle.checked ? "dark" : "light");
 });
 
 /**
@@ -39,6 +39,6 @@ function setColor(type) {
 
 var mode = localStorage.getItem("displayMode");
 if (mode) {
-  darkModeToggle.element.checked = mode == "dark";
+  darkModeToggle.checked = mode == "dark";
   setColor(mode);
 }

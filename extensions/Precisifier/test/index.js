@@ -25,31 +25,43 @@ const replacerVariableListUl = $("#output-replacer-vars"); // ul
 const removeComment = $("#removeComment"); // input:checkbox
 const removeWS = $("#removeWS"); // input:checkbox
 
+const codeTextarea = $("#code") // textarea
+const compileBtn = $("#compile") // button
+const codeOutput = $("#output-code") // pre
+
 const globalFlag = "<span class='g-flag'>g</span>";
 
 windowVariableItem.onEnter(addWindowVarEF);
-replacerAddBtn.onClick(addReplacerVarEF);
-windowVarAddBtn.onClick(addWindowVarEF);
+replacerAddBtn.onClick = addReplacerVarEF;
+windowVarAddBtn.onClick = addWindowVarEF;
+
+compileBtn.on("click", () => {
+  var codeToCompile = codeTextarea.innerText;
+  if (codeToCompile.length) {
+    codeOutput.innerText = Colorful.extensions.precisifier(codeToCompile, Configs);
+    Colorful.compile(codeOutput, {}, "JS")
+  }
+});
 
 varNameBefore.onEnter(addReplacerVarEF);
 varNameAfter.onEnter(addReplacerVarEF);
 
-removeComment.onChange(() => {
-  Configs.removeComment = removeComment.checked();
-});
-removeWS.onChange(() => {
-  Configs.removeWS = removeWS.checked();
-});
+removeComment.onChange = () => {
+  Configs.removeComment = removeComment.checked;
+}
+removeWS.onChange = () => {
+  Configs.removeWS = removeWS.checked;
+}
 
 
 // adders
 function addReplacerVarEF() {
-  var before = varNameBefore.value();
-  var after = varNameAfter.value();
+  var before = varNameBefore.value;
+  var after = varNameAfter.value;
   addReplacerVar(before, after, !isObjectProprty.checked());
 }
 function addWindowVarEF() {
-  var item = windowVariableItem.value();
+  var item = windowVariableItem.value;
   addWindowVar(item);
 }
 
@@ -64,20 +76,20 @@ function addReplacerVar(before, after, isGlobal = true) {
     classes = "obj-prop";
   }
   if (!toLook[before]) {
-    replacerVariableListUl.addHTML(li(
+    replacerVariableListUl.innerHTML += li(
       "<code class='name-inline replacer-before'>" + before + "</code> as <code class='name-inline replacer-after'>" + after + "</code>",
       "r" + before,
       "removeFromReplacer",
-      beforeClearImg, classes));
+      beforeClearImg, classes);
     toLook[before] = after;
   }
 }
 function addWindowVar(_var) {
   if (Configs.variables.window.indexOf(_var) < 0) {
-    windowVariableListUl.addHTML(li(
+    windowVariableListUl.inneeHTML += li(
       _var,
       "w" + Configs.variables.window.length,
-      "removeWinVarItem"));
+      "removeWinVarItem");
     Configs.variables.window.push(_var);
   }
 }
@@ -113,7 +125,7 @@ function clearIcon(id, removerFunction, prefiximg = "") {
 
 function removeFromReplacer(id) {
   const elem = $("#" + id);
-  const classList = elem.classList();
+  const classList = elem.classList;
   if (classList.contains("obj-prop")) {
     delete Configs.replace.objectProperty[id.substr(1)];
   } else {

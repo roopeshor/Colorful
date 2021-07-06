@@ -15,8 +15,6 @@ function parse(tokens, cfg = {}) {
   let parsed = "";
   let prevt = {};
   if (!Array.isArray(tokens)) tokens = Colorful.tokenizers.JS(tokens).tokens;
-  
-  console.log(tokens);
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i];
     let content = token.token.trim();
