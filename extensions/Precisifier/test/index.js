@@ -2,14 +2,14 @@
 
 const Configs = {
   variables: {
-    window: []
+    window: [],
   },
   removeComment: false,
   removeWS: false,
   replace: {
     objectProperty: {},
     global: {},
-  }
+  },
 };
 
 const windowVariableItem = $("#windowVariableItem"); // input:text
@@ -38,7 +38,10 @@ windowVarAddBtn.on("click", addWindowVarEF);
 compileBtn.on("click", () => {
   var codeToCompile = codeTextarea.innerText;
   if (codeToCompile.length) {
-    codeOutput.innerText = Colorful.extensions.precisifier(codeToCompile, Configs);
+    codeOutput.innerText = Colorful.extensions.precisifier(
+      codeToCompile,
+      Configs,
+    );
     Colorful.compile(codeOutput, {}, "JS");
   }
 });
@@ -53,7 +56,6 @@ removeWS.on("change", () => {
   Configs.removeWS = removeWS.checked;
 });
 
-
 // adders
 function addReplacerVarEF() {
   var before = varNameBefore.value;
@@ -64,7 +66,6 @@ function addWindowVarEF() {
   var item = windowVariableItem.value;
   addWindowVar(item);
 }
-
 
 function addReplacerVar(before, after, isGlobal = true) {
   let toLook = Configs.replace.global;
@@ -77,10 +78,16 @@ function addReplacerVar(before, after, isGlobal = true) {
   }
   if (!toLook[before]) {
     replacerVariableListUl.innerHTML += li(
-      "<code class='name-inline replacer-before'>" + before + "</code> as <code class='name-inline replacer-after'>" + after + "</code>",
+      "<code class='name-inline replacer-before'>" +
+        before +
+        "</code> as <code class='name-inline replacer-after'>" +
+        after +
+        "</code>",
       "r" + before,
       "removeFromReplacer",
-      beforeClearImg, classes);
+      beforeClearImg,
+      classes,
+    );
     toLook[before] = after;
   }
 }
@@ -89,7 +96,8 @@ function addWindowVar(_var) {
     windowVariableListUl.innerHTML += li(
       _var,
       "w" + Configs.variables.window.length,
-      "removeWinVarItem");
+      "removeWinVarItem",
+    );
     Configs.variables.window.push(_var);
   }
 }
@@ -102,10 +110,20 @@ function addWindowVar(_var) {
  * @param {string} removerFunction
  * @param {string} prefiximg
  * @param {string} [classes=""]
- * @return {string}  
+ * @return {string}
  */
 function li(content, id, removerFunction, prefiximg, classes = "") {
-  return "<li id='" + id + "' class='" + classes + "'><span>" + content + "</span>" + clearIcon(id, removerFunction, prefiximg) + "</li>";
+  return (
+    "<li id='" +
+    id +
+    "' class='" +
+    classes +
+    "'><span>" +
+    content +
+    "</span>" +
+    clearIcon(id, removerFunction, prefiximg) +
+    "</li>"
+  );
 }
 /**
  * retruns html of clear icon
@@ -113,13 +131,19 @@ function li(content, id, removerFunction, prefiximg, classes = "") {
  * @param {string} id
  * @param {string} removerFunction remover
  * @param {string} [prefiximg=""] thing to add before img
- * @return {string}  
+ * @return {string}
  */
 function clearIcon(id, removerFunction, prefiximg = "") {
-  return "<span class='img-clear-container'>" + prefiximg + "<img src='./media/ic_clear.svg' class='icon clear' onclick='" + removerFunction + "(\"" + id + "\")'></span>";
+  return (
+    "<span class='img-clear-container'>" +
+    prefiximg +
+    "<img src='./media/ic_clear.svg' class='icon clear' onclick='" +
+    removerFunction +
+    '("' +
+    id +
+    "\")'></span>"
+  );
 }
-
-
 
 // removers
 

@@ -1,3 +1,3 @@
 # Colorful
 
-JS Syntax highlighter
+HTML & JS Syntax highlighter

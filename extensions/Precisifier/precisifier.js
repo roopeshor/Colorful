@@ -13,7 +13,8 @@ function parse(tokens, cfg = {}) {
   const toReplaceAsObjProp = (cfg.replace || {}).objectProperty || {};
   const toReplaceAsglobal = (cfg.replace || {}).global || {};
   let parsed = "";
-  if (!Array.isArray(tokens)) tokens = Colorful.tokenizers.JS(tokens).tokens;
+  if (!Array.isArray(tokens))
+    tokens = Colorful.tokenizers.JS(tokens).tokens;
   console.log(tokens);
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i];
@@ -25,12 +26,15 @@ function parse(tokens, cfg = {}) {
 
     if (type == "JS-COMMENT" && removeComment) {
       continue;
-    } else if (/JS-(OBJECTPROP|OBJECTPROPINOBJ|METHODASOBJPROP)/.test(type)) {
+    } else if (
+      /JS-(OBJECTPROP|OBJECTPROPINOBJ|METHODASOBJPROP)/.test(type)
+    ) {
       let replacer = toReplaceAsObjProp[content];
       if (replacer) content = replacer;
     } else if (type == "JS-NAME") {
       let replacer = toReplaceAsglobal[content];
-      if (replacer) token.token = token.token.replace(content, replacer);
+      if (replacer)
+        token.token = token.token.replace(content, replacer);
     }
 
     if (removeWS && type != "JS-KEY") {
@@ -58,7 +62,7 @@ function parse(tokens, cfg = {}) {
     content,
     ws,
     surrounder = "[",
-    removeLastChar
+    removeLastChar,
   ) {
     if (removeLastChar) parsed = parsed.slice(0, parsed.length - 1);
 

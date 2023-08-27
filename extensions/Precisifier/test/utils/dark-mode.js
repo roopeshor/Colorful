@@ -16,7 +16,7 @@ const colors = {
     "--bg-list-color": "#495255",
     "--replacer-before-color": "#fd7200",
     "--replacer-after-color": "#00d7fd",
-  }
+  },
 };
 
 const darkModeToggle = $(".toggle-dark-mode");
@@ -25,8 +25,8 @@ darkModeToggle.on("change", () => {
 });
 
 /**
- * 
- * @param {object} colorObj 
+ *
+ * @param {object} colorObj
  */
 function setColor(type) {
   const colorObj = colors[type];

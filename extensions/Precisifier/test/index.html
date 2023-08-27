@@ -1,11 +1,14 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
     <title>Test</title>
-    <link rel="stylesheet" href="../../../src/style.css"/>
+    <link rel="stylesheet" href="../../../src/style.css" />
     <link rel="stylesheet" href="style.css" />
     <script src="../../../src/core.js" defer></script>
     <script src="../../../src/JavaScript.js" defer></script>
@@ -18,19 +21,24 @@
   <body>
     <header>
       <h1>Code Reformatter</h1>
-      <label><input type="checkbox" class="toggle-dark-mode"><span class="label"></span></label>
+      <label
+        ><input type="checkbox" class="toggle-dark-mode" /><span
+          class="label"
+        ></span
+      ></label>
     </header>
     <div class="controls">
       <div class="row">
         <div class="variables column">
           <h3>Variables</h3>
           <div class="windowVars">
-            <label>in window
-            <input
-              type="text"
-              name="WVL"
-              id="windowVariableItem"
-              placeholder="list of variables seperated by spaces"
+            <label
+              >in window
+              <input
+                type="text"
+                name="WVL"
+                id="windowVariableItem"
+                placeholder="list of variables seperated by spaces"
             /></label>
             <input
               type="button"
@@ -44,28 +52,33 @@
         <div class="replacers column">
           <div class="top">
             <h3>Change name of variables</h3>
-            <label>Rename 
-            <input
-              type="text"
-              class="varWidth"
-              name="before"
-              id="varNameBefore"
-              placeholder="var1"
+            <label
+              >Rename
+              <input
+                type="text"
+                class="varWidth"
+                name="before"
+                id="varNameBefore"
+                placeholder="var1"
             /></label>
-            <label>as 
-            <input
-              type="text"
-              class="varWidth"
-              name="after"
-              id="varNameAfter"
-              placeholder="var2"
+            <label
+              >as
+              <input
+                type="text"
+                class="varWidth"
+                name="after"
+                id="varNameAfter"
+                placeholder="var2"
             /></label>
             <div>
-              <label><input
-                type="checkbox"
-                name="isObjectProprty"
-                id="isObjectProprty"
-              /> This is a object property</label>
+              <label
+                ><input
+                  type="checkbox"
+                  name="isObjectProprty"
+                  id="isObjectProprty"
+                />
+                This is a object property</label
+              >
             </div>
             <input
               id="replacer-add-btn"
@@ -78,8 +91,18 @@
         </div>
       </div>
       <div class="checklists">
-        <label><input type="checkbox" name="removeComment" id="removeComment" /> Remove comment</label>
-        <label><input type="checkbox" name="removeWS" id="removeWS" /> Remove whitespace</label>
+        <label
+          ><input
+            type="checkbox"
+            name="removeComment"
+            id="removeComment"
+          />
+          Remove comment</label
+        >
+        <label
+          ><input type="checkbox" name="removeWS" id="removeWS" />
+          Remove whitespace</label
+        >
       </div>
       <div class="finish">
         <button id="compile" class="btn-finish">Compile</button>
@@ -94,11 +117,11 @@ function log (msg) {
       <div class="output-container">
         <div class="actions">
           <h3>Output</h3>
-          <button id="btn-copy-output" class="btn-finish">Copy</button>
+          <button id="btn-copy-output" class="btn-finish">
+            Copy
+          </button>
         </div>
-        <pre id="output-code">
-          
-        </pre>
+        <pre id="output-code"></pre>
       </div>
     </div>
   </body>

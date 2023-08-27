@@ -1,7 +1,9 @@
-(function(w) {
+(function (w) {
   // check for core.js
   if (!window["Colorful"]) {
-    console.error("Core part of library wasn't imported. Import it by adding script tag linking core.js`");
+    console.error(
+      "Core part of library wasn't imported. Import it by adding script tag linking core.js`",
+    );
     return;
   }
   const operatorRE = /^[=/<>!]+/;
@@ -45,7 +47,7 @@
         } else if (!/\s/.test(text[i + 1])) {
           const puctuations = next.match(operatorRE)[0];
           addToken(T_TAG_PUCT_L, puctuations);
-          i+= puctuations.length;
+          i += puctuations.length;
 
           // find tag name
           const tagName = text.substr(i).match(tagNameRE);
@@ -62,7 +64,11 @@
                 if (tagName[0] == "script" && puctuations == "<") {
                   // parse JS
                   if (jstokenizer != undefined) {
-                    const res = jstokenizer(text.substr(i), {}, /^<\/script\s*>/i);
+                    const res = jstokenizer(
+                      text.substr(i),
+                      {},
+                      /^<\/script\s*>/i,
+                    );
                     if (res["tokens"].length) {
                       tokens = tokens.concat(res["tokens"]);
                       i += res["inputEnd"];
@@ -75,7 +81,7 @@
                 i++;
                 // find value
                 const anc = text[i];
-                if (anc == "'" || anc == "\"") {
+                if (anc == "'" || anc == '"') {
                   // reads value inside string
                   addToken(T_VALUE_OPER, anc);
                   let slashes = 0; // number of backslashes
@@ -91,7 +97,9 @@
                     }
                     const char = text[i];
                     if (char == "\\") {
-                      const slsh = text.substring(i).match(/[\\]+/)[0];
+                      const slsh = text
+                        .substring(i)
+                        .match(/[\\]+/)[0];
                       addToken(T_VALUE, slsh);
                       slashes += slsh.length;
                       i += slsh.length;
@@ -126,7 +134,7 @@
             }
           } else {
             // let previous tag to be OTHER type
-            tokens[tokens.length-1].type = T_OTHER;
+            tokens[tokens.length - 1].type = T_OTHER;
           }
         } else {
           addToken(T_OTHER, char);
@@ -147,7 +155,7 @@
         addToken(T_OTHER, val);
       }
     }
-    return {"tokens": tokens, "inputEnd": i};
+    return { tokens: tokens, inputEnd: i };
 
     /**
      * @param {string} type
@@ -155,23 +163,26 @@
      */
     function addToken(type, token) {
       tokens.push({
-        "type": type,
-        "token": token,
+        type: type,
+        token: token,
       });
     }
   }
 
   w["Colorful"]["tokenizers"]["HTML"] = tokenize;
-  w["Colorful"]["tokenTypes"] = Object.assign(w["Colorful"]["tokenTypes"], {
-    [T_TAG]: "tag html-tag",
-    [T_ATTRIBUTE]: "attribute html-attribute",
-    [T_OPERATOR]: "operator html-operator",
-    [T_COMMENT]: "comment html-comment",
-    [T_OTHER]: "other",
-    [T_SPECIAL]: "html-special",
-    [T_TAG_PUCT_L]: "operator tag-puctuation-left",
-    [T_TAG_PUCT_R]: "operator tag-puctuation-right",
-    [T_VALUE_OPER]: "value value_operator",
-    [T_VALUE]: "value",
-  });
+  w["Colorful"]["tokenTypes"] = Object.assign(
+    w["Colorful"]["tokenTypes"],
+    {
+      [T_TAG]: "tag html-tag",
+      [T_ATTRIBUTE]: "attribute html-attribute",
+      [T_OPERATOR]: "operator html-operator",
+      [T_COMMENT]: "comment html-comment",
+      [T_OTHER]: "other",
+      [T_SPECIAL]: "html-special",
+      [T_TAG_PUCT_L]: "operator tag-puctuation-left",
+      [T_TAG_PUCT_R]: "operator tag-puctuation-right",
+      [T_VALUE_OPER]: "value value_operator",
+      [T_VALUE]: "value",
+    },
+  );
 })(window);

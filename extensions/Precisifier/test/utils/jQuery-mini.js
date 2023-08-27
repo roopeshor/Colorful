@@ -1,9 +1,8 @@
 (function () {
-  
   /**
    *
    * @param {string} selector
-   * @return {object}  
+   * @return {object}
    */
   window.$ = function (selector) {
     const elem = document.querySelector(selector);
@@ -18,12 +17,12 @@
       elem.on = function (type, _function, options) {
         elem.addEventListener(type, _function, options);
       };
-      
+
       /**
        * Attach a event listener that runs when Enter key is Pressed
-       * @param {function} fun 
+       * @param {function} fun
        */
-      elem.onEnter = function(fun) {
+      elem.onEnter = function (fun) {
         elem.addEventListener("keypress", (evt) => {
           if (evt.key == "Enter") {
             fun(evt);

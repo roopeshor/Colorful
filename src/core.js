@@ -1,4 +1,4 @@
-(function(w) {
+(function (w) {
   w.Colorful = {
     // default configuration
     config: {
@@ -25,9 +25,7 @@
           if (i < lineCount) complete += "\n";
         }
         complete +=
-          "</code><code class='code-cf'>" +
-          markuped +
-          "</code>";
+          "</code><code class='code-cf'>" + markuped + "</code>";
       } else {
         complete = "<code class='code-cf'>" + markuped + "</code>";
       }
@@ -48,15 +46,20 @@
       const out = tokenize(text);
       const markuped = this.parse(out.tokens);
       time = window.performance.now() - time;
-      container.innerHTML = w.Colorful.finishUp(cfg, text, markuped, container);
+      container.innerHTML = w.Colorful.finishUp(
+        cfg,
+        text,
+        markuped,
+        container,
+      );
       const speed = ((text.length / 1024 / time) * 1000).toFixed(3); // kb/s
       console.log(
         `Language: ${lang}
 total code analysed: ${(text.length / 1024).toFixed(3)} KiB\nfound: ${
-    out.tokens.length
-  } tokens\ncompile time: ${time.toFixed(
-    4
-  )} ms\ncompile speed: ${speed} KiB/s`
+          out.tokens.length
+        } tokens\ncompile time: ${time.toFixed(
+          4,
+        )} ms\ncompile speed: ${speed} KiB/s`,
       );
     },
 
@@ -64,17 +67,23 @@ total code analysed: ${(text.length / 1024).toFixed(3)} KiB\nfound: ${
      * parse tokens to generate html string
      * @param {Array} tokens array of tokens
      * @return {string}
-   */
+     */
     parse: function parse(tokens) {
       let formatted = "";
       const d = this.tokenTypes;
       for (let i = 0; i < tokens.length; i++) {
         const tkn = tokens[i];
         const tokenType = tkn.type;
-        const token = tkn.token.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+        const token = tkn.token
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;");
         if (tokenType != "OTHER") {
           formatted +=
-            "<span class=\"token " + d[tokenType] + "\">" + token + "</span>";
+            '<span class="token ' +
+            d[tokenType] +
+            '">' +
+            token +
+            "</span>";
         } else {
           formatted += token;
         }
@@ -86,11 +95,11 @@ total code analysed: ${(text.length / 1024).toFixed(3)} KiB\nfound: ${
   /**
    * highlight all languages on page loads
    */
-  w.addEventListener("load", function() {
+  w.addEventListener("load", function () {
     const langs = Object.keys(w.Colorful.tokenizers);
     for (let i = 0; i < langs.length; i++) {
       const lang = langs[i];
-      const codes = document.getElementsByClassName("cf-"+lang);
+      const codes = document.getElementsByClassName("cf-" + lang);
       for (let k = 0; k < codes.length; k++) {
         const block = codes[k];
         const cfg = {

@@ -3,7 +3,7 @@
   // check for core.js
   if (!window["Colorful"]) {
     console.error(
-      "Core part of library wasn't imported. Import it by adding script tag linking core.js`"
+      "Core part of library wasn't imported. Import it by adding script tag linking core.js`",
     );
     return;
   }
@@ -55,13 +55,14 @@
           } else if (operatorRE.test(ch)) {
             var opers = sel.substr(k).match(operatorRE)[0];
             addToken(T_OPERATOR, opers);
-            k+=opers.length;
+            k += opers.length;
           } else if (/\s/.test(ch)) {
             var spaces = sel.substr(k).match(/\s+/)[0];
-            if (tokens[tokens.length-1].token) tokens[tokens.length-1].token += spaces;
+            if (tokens[tokens.length - 1].token)
+              tokens[tokens.length - 1].token += spaces;
             // if a token exists in the list add whitespaces to it
             else addToken(T_OTHER, spaces); // if there is no previous tokens
-            k+=spaces.length;
+            k += spaces.length;
           } else {
             // some other stuff;
 
@@ -80,7 +81,7 @@
                   addToken(T_ATTRIBUTE, n);
                 }
               } else {
-                addToken(T_SELECTOR, n)
+                addToken(T_SELECTOR, n);
               }
               k += n.length;
             } else {
@@ -96,7 +97,7 @@
       var char = text[i];
       if (char == "{") {
         addToken(T_OTHER, char);
-        i++
+        i++;
         toRead = next.match(/[^}]+/);
         if (toRead) {
           var k = 0,
@@ -107,8 +108,8 @@
             var name = defs.substr(k).match(nameRE);
             if (name) {
               addToken(T_PROPERTY, name[0]);
-              k += name[0].length
-            } 
+              k += name[0].length;
+            }
             if (k >= Len) break;
             var ch = defs[k];
             if (defs.substr(k, 2) == "/*") {
@@ -117,18 +118,16 @@
               if (ch == ":") {
                 let toRead = defs.substr(k).match(/[^;]/);
                 if (toRead) {
-                  
                 }
               } else {
                 var opers = defs.substr(k).match(operatorRE)[0];
                 addToken(T_OPERATOR, opers);
-                k+=opers.length;
+                k += opers.length;
               }
             }
           }
         }
-        
-      } else if (text.substr(i,2) == "/*") {
+      } else if (text.substr(i, 2) == "/*") {
         // read comment
         i += readComment(text, i);
       } else {
@@ -139,7 +138,7 @@
     }
     return { tokens: tokens, inputEnd: i };
 
-    function readComment (txt,j) {
+    function readComment(txt, j) {
       var comment = txt.substr(j).match(commentRE)[0];
       addToken(T_COMMENT, comment);
       return comment.length;
@@ -150,9 +149,7 @@
      */
     function mergeSameTypes() {
       var tl = tokens.length;
-      if (
-        tokens[tl - 1].type == tokens[tl - 2]?.type
-      ) {
+      if (tokens[tl - 1].type == tokens[tl - 2]?.type) {
         tokens[tl - 2].token += tokens[tl - 1].token;
         tokens.pop();
       }
@@ -170,13 +167,16 @@
   }
 
   w["Colorful"]["tokenizers"]["CSS"] = tokenize;
-  w["Colorful"]["tokenTypes"] = Object.assign(w["Colorful"]["tokenTypes"], {
-    [T_ATTRIBUTE]: "attribute css-attribute",
-    [T_OPERATOR]: "operator css-operator",
-    [T_COMMENT]: "comment css-comment",
-    [T_OTHER]: "other",
-    [T_VALUE_OPER]: "value value_operator",
-    [T_SELECTOR]: "selector css-selector",
-    [T_VALUE]: "value",
-  });
+  w["Colorful"]["tokenTypes"] = Object.assign(
+    w["Colorful"]["tokenTypes"],
+    {
+      [T_ATTRIBUTE]: "attribute css-attribute",
+      [T_OPERATOR]: "operator css-operator",
+      [T_COMMENT]: "comment css-comment",
+      [T_OTHER]: "other",
+      [T_VALUE_OPER]: "value value_operator",
+      [T_SELECTOR]: "selector css-selector",
+      [T_VALUE]: "value",
+    },
+  );
 })(window);

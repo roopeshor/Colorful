@@ -1,7 +1,9 @@
 (function (w) {
   // check for core.js
   if (!window["Colorful"]) {
-    console.error("Core part of library wasn't imported. Import it by adding script tag linking core.js`");
+    console.error(
+      "Core part of library wasn't imported. Import it by adding script tag linking core.js`",
+    );
     return;
   }
 
@@ -12,7 +14,8 @@
   const nameCharRE = /^[\wÀ-￿$]+/u; // \w, $ and from \u00c0 to \uffff
 
   // modified regex from Prism: https://github.com/PrismJS/prism/blob/master/components/prism-javascript.js#L21
-  const number = /^((?:(?:0[xX](?:[\dA-Fa-f](?:_[\dA-Fa-f])?)+|0[bB](?:[01](?:_[01])?)+|0[oO](?:[0-7](?:_[0-7])?)+)n?|(?:\d(?:_\d)?)+n|NaN|Infinity)\b|(?:(?:\d(?:_\d)?)+\.?(?:\d(?:_\d)?)*|\B\.(?:\d(?:_\d)?)+)(?:[Ee][+-]?(?:\d(?:_\d)?)+)?)/;
+  const number =
+    /^((?:(?:0[xX](?:[\dA-Fa-f](?:_[\dA-Fa-f])?)+|0[bB](?:[01](?:_[01])?)+|0[oO](?:[0-7](?:_[0-7])?)+)n?|(?:\d(?:_\d)?)+n|NaN|Infinity)\b|(?:(?:\d(?:_\d)?)+\.?(?:\d(?:_\d)?)*|\B\.(?:\d(?:_\d)?)+)(?:[Ee][+-]?(?:\d(?:_\d)?)+)?)/;
 
   const commentRE = /(\/\*[\s\S]*?\*\/|\/\*[\s\S]*|\/\/.*)/;
   const regexRE =
@@ -24,7 +27,7 @@
   // types of tokens
   const T_NAME = "JS-NAME";
   const T_OBJECTPROP = "JS-OBJECTPROP";
-  // object property inside Object 
+  // object property inside Object
   // eg: {a:3}
   const T_OBJECTPROPINOBJ = "JS-OBJECTPROPINOBJ";
   const T_KEY = "JS-KEY";
@@ -111,7 +114,7 @@
         // if a token exists in the list add whitespaces to it
         else addToken(T_NAME, space); // if there is no previous tokens
         i += space.length;
-      } else if (char == "'" || char == "\"" || char == "`") {
+      } else if (char == "'" || char == '"' || char == "`") {
         // string ahead
 
         addToken(T_STRING);
@@ -121,7 +124,11 @@
         let slashes = 0; // number of backslashes
         // regular expression that is used to match all characters except the string determiner and backslashes
         const re =
-          char == "'" ? /^[^'\\]+/ : char == "\"" ? /^[^"\\]+/ : /^[^`${]+/;
+          char == "'"
+            ? /^[^'\\]+/
+            : char == '"'
+            ? /^[^"\\]+/
+            : /^[^`${]+/;
         while (i < len) {
           str = text.substring(i).match(re);
           if (str) {
@@ -138,7 +145,8 @@
           } else if (ch == char) {
             addToken(T_STRING, ch);
             i++;
-            if (slashes % 2 == 0) break; // even number of # of backslashes means string character is not escaped
+            // even number of backslashes means string character is not escaped
+            if (slashes % 2 == 0) break;
             else slashes = 0; // else reset it
           } else if (text.substr(i, 2) == "${") {
             // only for multiline string
@@ -166,11 +174,15 @@
           const comment = nxt.match(commentRE)[0];
           i += comment.length;
           addToken(T_COMMENT, comment);
-        } else if (char == "/" && !(
-          (prevt == T_NAME && !/^\s+$/.test(prevTkn.token)) ||
-          prevt == T_OBJECTPROP ||
-          prevt == T_NUMBER
-        ) && regexRE.test(nxt)) {
+        } else if (
+          char == "/" &&
+          !(
+            (prevt == T_NAME && !/^\s+$/.test(prevTkn.token)) ||
+            prevt == T_OBJECTPROP ||
+            prevt == T_NUMBER
+          ) &&
+          regexRE.test(nxt)
+        ) {
           // regular expression ahead
           let regExAhead = true;
           const tk = (tokens[tokens.length - 2] || {}).type;
@@ -210,7 +222,10 @@
             for (let k = tokens.length - 2; k >= 0; k--) {
               const tk = tokens[k];
               toReadArray.push(tk);
-              if (tk.type == T_OTHER && tk.scopeLevel == initialScopeLevel) {
+              if (
+                tk.type == T_OTHER &&
+                tk.scopeLevel == initialScopeLevel
+              ) {
                 // reached `(`
                 tokens.splice(k);
                 break;
@@ -226,7 +241,11 @@
         } else {
           addToken(T_OPERATOR); // regular operator
           i++;
-          if (char == ":" && scopeTree.slice(-1)[0] == "{" && prevTkn.type == T_NAME) {
+          if (
+            char == ":" &&
+            scopeTree.slice(-1)[0] == "{" &&
+            prevTkn.type == T_NAME
+          ) {
             prevTkn.type = T_OBJECTPROPINOBJ;
           }
         }
@@ -237,7 +256,8 @@
         const pprev = tokens.slice(-2)[0] || emptyToken;
         const isFunctionClause =
           (prev.token.match(/function\s*$/) && prevt == T_KEY) ||
-          (pprev.token.match(/function\s*$/) && pprev.type == T_KEY) ||
+          (pprev.token.match(/function\s*$/) &&
+            pprev.type == T_KEY) ||
           scopeTree.slice(-1)[0] == "class";
         addToken(T_OTHER);
         i++;
@@ -252,7 +272,9 @@
         }
         if (isFunctionClause) {
           // reads arguments
-          const tkn = tokenize(text.substring(i), { breakOnParenUnmatch: true });
+          const tkn = tokenize(text.substring(i), {
+            breakOnParenUnmatch: true,
+          });
           const tkns = tkn.tokens;
           readArgumentsInTokens(tkns);
           i += tkn.inputEnd;
@@ -295,7 +317,8 @@
       const tl = tokens.length;
       if (
         tokens[tl - 1].type == (tokens[tl - 2] || {}).type &&
-        tokens[tl - 1].scopeLevel == (tokens[tl - 2] || {}).scopeLevel &&
+        tokens[tl - 1].scopeLevel ==
+          (tokens[tl - 2] || {}).scopeLevel &&
         tokens[tl - 1].type != T_OTHER
       ) {
         tokens[tl - 2].token += tokens[tl - 1].token;
@@ -341,26 +364,23 @@
       scope = "function";
     }
 
-
     /**
      * checks if the current context is object property
-     * @param {string} previousToken 
+     * @param {string} previousToken
      * @param {Object} _2ndLastToken 2nd last token
      * @returns {boolean}
-    */
-    function isObjectProprty (previousToken, _2ndLastToken) {
-      return previousToken == "." &&
-        (
-          /[)\]]/.test(_2ndLastToken.token) ||
-          (
-            previousToken.length == 1 &&
-            (
-              /^JS-(NAME|OBJECTPROP|ARGUMENT|BUILTIN|REGEX)$/.test(_2ndLastToken.type) ||
+     */
+    function isObjectProprty(previousToken, _2ndLastToken) {
+      return (
+        previousToken == "." &&
+        (/[)\]]/.test(_2ndLastToken.token) ||
+          (previousToken.length == 1 &&
+            (/^JS-(NAME|OBJECTPROP|ARGUMENT|BUILTIN|REGEX)$/.test(
+              _2ndLastToken.type,
+            ) ||
               // for this.someProperty or false.someProperties
-              /(this|false|true)/.test(_2ndLastToken.token)
-            )
-          )
-        );
+              /(this|false|true)/.test(_2ndLastToken.token))))
+      );
     }
 
     /**
@@ -370,7 +390,7 @@
      */
     function readWordToken(word) {
       const prevt = (prevTkn.token || "").trim();
-      const p2revt = (tokens[tokens.length - 2] || {});
+      const p2revt = tokens[tokens.length - 2] || {};
       if (
         KeywordRE.test(word) || // global keywords
         ((word == "get" || word == "set") &&
@@ -380,7 +400,7 @@
         addToken(T_KEY, word);
         if (
           /(function|if|do|while|for|class|catch|else|finally|switch|try)/.test(
-            word
+            word,
           )
         ) {
           scope = word;
@@ -408,19 +428,22 @@
   w["Colorful"]["tokenizers"]["JS"] = tokenize;
 
   // add types of token used here to tokenType object for parser to classify tokens
-  w["Colorful"]["tokenTypes"] = Object.assign(w["Colorful"]["tokenTypes"], {
-    [T_NAME]: "name js-name",
-    [T_OBJECTPROP]: "objprop",
-    [T_OBJECTPROPINOBJ]: "objprop object-prop-in-obj",
-    [T_KEY]: "keyword js-keyword",
-    [T_COMMENT]: "comment js-comment",
-    [T_NUMBER]: "number js-number",
-    [T_ARGUMENT]: "argument",
-    [T_BUILTIN]: "builtIn js-builtIn",
-    [T_METHOD]: "method js-method",
-    [T_METHODASOBJPROP]: "method js-method method-as-obj-prop",
-    [T_STRING]: "string js-string",
-    [T_REGEX]: "regex",
-    [T_OPERATOR]: "operator js-operator",
-  });
+  w["Colorful"]["tokenTypes"] = Object.assign(
+    w["Colorful"]["tokenTypes"],
+    {
+      [T_NAME]: "name js-name",
+      [T_OBJECTPROP]: "objprop",
+      [T_OBJECTPROPINOBJ]: "objprop object-prop-in-obj",
+      [T_KEY]: "keyword js-keyword",
+      [T_COMMENT]: "comment js-comment",
+      [T_NUMBER]: "number js-number",
+      [T_ARGUMENT]: "argument",
+      [T_BUILTIN]: "builtIn js-builtIn",
+      [T_METHOD]: "method js-method",
+      [T_METHODASOBJPROP]: "method js-method method-as-obj-prop",
+      [T_STRING]: "string js-string",
+      [T_REGEX]: "regex",
+      [T_OPERATOR]: "operator js-operator",
+    },
+  );
 })(window);

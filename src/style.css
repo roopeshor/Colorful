@@ -2,7 +2,7 @@
   display: flex;
   resize: both;
   color: #fff;
-  font-family: Consolas, 'Courier New', monospace;
+  font-family: Consolas, "Courier New", monospace;
   line-height: normal;
   outline: none;
   font-size: 16px;
@@ -12,7 +12,6 @@
   padding: 10px;
   resize: none;
   overflow: auto;
-  
 }
 .code-cf {
   display: block;
@@ -32,7 +31,8 @@
   color: #858585;
 }
 
-.code-cf .string, .code-cf .value {
+.code-cf .string,
+.code-cf .value {
   color: #23d349;
 }
 .code-cf .keyword {
