@@ -1,66 +1,75 @@
-.colorful {
-  display: inherit;
-  margin: 5px;
-  padding: 5px;
+*[class^="cf"] {
+  display: flex;
   resize: both;
-  background-color: #101515;
   color: #fff;
-  font-family: monospace;
+  font-family: Consolas, "Courier New", monospace;
   line-height: normal;
   outline: none;
-  white-space: pre;
   font-size: 16px;
+  background-color: #101515;
+  white-space: pre;
+  justify-content: flex-start;
+  padding: 8px;
+  resize: none;
   overflow: auto;
 }
-.colorful-code {
+.code-cf {
+  display: block;
+  background-color: #101515;
   position: relative;
-  display: inherit;
-  outline: none;
-  width: 100%;
-  height: 100%;
-  margin-left: 0;
-  tab-size: 2;
+  padding-left: 2px;
+  tab-size: 4;
+  width: min-content;
+  resize: none;
 }
-.colorful .string {
-  color: #1cca41;
-}
-.colorful .keyword {
-  color: #c678dd;
-}
-.colorful .comment {
-  color: #777;
-}
-.colorful .operator {
-  color: #1598a7;
-}
-.colorful .number {
-  color: #ffa601;
-}
-.colorful .method {
-  color: #44c4f8;
-}
-.colorful .argument {
-  color: #ff983e;
-}
-.colorful .regex {
-  color: #f7aa67;
-}
-.colorful .object {
-  color: #e28306;
-}
-.colorful .builtIn {
-  color: #3cbef2;
-  font-style: italic;
-}
-.colorful .objprop {
-  color: #e9e482;
-}
-.colorful-numberRow {
-  display: inherit;
+.numberRow-cf {
   padding-right: 10px;
-  padding-left: 15px;
+  padding-left: 0;
   text-align: right;
   width: min-content;
-  border-right: 1pxsolid#666;
+  border-right: 1px solid #666;
   color: #858585;
+}
+
+.code-cf .string,
+.code-cf .value {
+  color: #23d349;
+}
+.code-cf .keyword {
+  color: #c678dd;
+}
+.code-cf .comment {
+  color: #8b949e;
+}
+.code-cf .operator {
+  color: #1598a7;
+}
+.code-cf .number {
+  color: #ffa601;
+}
+.code-cf .method {
+  color: #44c4f8;
+}
+.code-cf .argument {
+  color: #fc7c49;
+}
+.code-cf .regex {
+  color: #f7aa67;
+}
+.code-cf .builtIn {
+  color: #5db0d7;
+  font-style: italic;
+}
+.code-cf .objprop {
+  color: #e9e482;
+}
+
+.code-cf .tag {
+  color: #f12e58;
+}
+.code-cf .attribute {
+  color: orange;
+}
+.code-cf .html-pecial {
+  color: #8370f4;
 }
