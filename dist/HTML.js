@@ -1,6 +1,186 @@
-(function(m){if(window.Colorful){var q=/^[=/<>!]+/,u=/^[^=>/]+/,v=/(\x3c!--[\s\S]*?--\x3e|\x3c!--[\s\S]*)/,r=/[^\s>/]+/,w=/[^&<]*/,x=/^&[a-zA-Z]+;/,B="TAG",C="ATTRIBUTE",D="OPERATOR",E="COMMENT",F="OTHER",G="SPECIAL",H="TAG-PUCTUATION-LEFT",I="TAG-PUCTUATION-RIGHT",J="VALUE_OPERATOR",K="VALUE";m.Colorful.tokenizers.HTML=function(f){
-function b(y,z){k.push({a:y,b:z});}for(var n=f.length,k=[],a=0,t=window.Colorful.tokenizers.JS;a<n;){var h=f[a],e=f.substr(a);if("<"==h)if("\x3c!--"==e.substr(0,4))(e=e.match(v)[0]),(a+=e.length),b(E,e);else if(/\s/.test(f[a+1]))b(F,h),a++;else{h=e.match(q)[0];b(H,h);a+=h.length;var l=f.substr(a).match(r);if(l)for(b(B,l[0]),a+=l[0].length;a<n;){
-var c=f[a];if(">"==c){b(I,c);a++;"script"==l[0]&&"<"==h&&void 0!=t&&((e=t(f.substr(a),{},/^<\/script\s*>/i)),e.tokens.length&&((k=k.concat(e.tokens)),(a+=e.inputEnd)));break;}else if("="==c){b(D,c);a++;var d=f[a];if("'"==d||'"'==d){b(J,d);var p=0,A="'"==d?/^[^'\\]+/:/^[^"\\]+/;for(a++;a<n;){if((c=f.substring(a).match(A)))
-b(K,c[0]),(a+=c[0].length),(p=0);c=f[a];if("\\"==c)(c=f.substring(a).match(/[\\]+/)[0]),b(K,c),(p+=c.length),(a+=c.length);else if(c==d)if((a++,0==p%2)){b(J,c);break;}else b(K,c);}}else(d=e.match(r)[0]),(a+=d.length),b(K,d);}else(d=c.match(q))?(b(D,d[0]),(a+=d[0].length)):((d=f.substr(a).match(u)[0]),(a+=d.length),b(C,d));}else k[k.length-1].a=F;}else
-"&"==h?(e=e.match(x))?(b(G,e[0]),(a+=e[0].length)):(b(F,h),a++):((d=e.match(w)[0]),(a+=d.length),b(F,d));}return{tokens:k,inputEnd:a};};m.Colorful.tokenTypes=Object.assign(m.Colorful.tokenTypes,{[B]:"tag html-tag",[C]:"attribute html-attribute",[D]:"operator html-operator",[E]:"comment html-comment",[F]:"other",[G]:"html-special",[H]:"operator tag-puctuation-left",[I]:"operator tag-puctuation-right",[J]:"value value_operator",[K]:"value"})
-}else console.error("Core part of library wasn't imported. Import it by adding script tag linking core.js`");})(window);
+(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+(function (w) {
+  // check for core.js
+  if (!window["Colorful"]) {
+    console.error(
+      "Core part of library wasn't imported. Import it by adding script tag linking core.js`",
+    );
+    return;
+  }
+  const operatorRE = /^[=/<>!]+/;
+  const attributeRE = /^[^=>/]+/;
+  const commentRE = /(<!--[\s\S]*?-->|<!--[\s\S]*)/;
+  const tagNameRE = /[^\s>/]+/;
+  const valueRE = tagNameRE;
+  const textRE = /[^&<]*/;
+  const specialRE = /^&[a-zA-Z]+;/;
+  // types of tokens
+  const T_TAG = "HTML-TAG";
+  const T_ATTRIBUTE = "HTML-ATTRIBUTE";
+  const T_OPERATOR = "HTML-OPERATOR";
+  const T_COMMENT = "HTML-COMMENT";
+  const T_OTHER = "HTML-OTHER";
+  const T_SPECIAL = "HTML-SPECIAL";
+  const T_TAG_PUCT_L = "HTML-TAG-PUCTUATION-LEFT";
+  const T_TAG_PUCT_R = "HTML-TAG-PUCTUATION-RIGHT";
+  const T_VALUE_OPER = "HTML-VALUE_OPERATOR";
+  const T_VALUE = "HTML-VALUE";
+
+  /**
+   * tokenize input text
+   * @param {String} text text to be tokenised
+   * @return {Object}
+   */
+  function tokenize(text) {
+    const len = text.length;
+    let tokens = [];
+    let i = 0;
+    const jstokenizer = window["Colorful"]["tokenizers"]["JS"];
+    while (i < len) {
+      const char = text[i];
+      const next = text.substring(i);
+      if (char == "<") {
+        if (next.substring(0, 4) == "<!--") {
+          // comment ahead
+          const comment = next.match(commentRE)[0];
+          i += comment.length;
+          addToken(T_COMMENT, comment);
+        } else if (!/\s/.test(text[i + 1])) {
+          const puctuations = next.match(operatorRE)[0];
+          addToken(T_TAG_PUCT_L, puctuations);
+          i += puctuations.length;
+
+          // find tag name
+          const tagName = text.substring(i).match(tagNameRE);
+          if (tagName) {
+            addToken(T_TAG, tagName[0]);
+            i += tagName[0].length;
+            // run a paser locally to find attributes and values
+            while (i < len) {
+              const ch = text[i];
+              if (ch == ">") {
+                // end of tag
+                addToken(T_TAG_PUCT_R, ch);
+                i++;
+                if (tagName[0] == "script" && puctuations == "<") {
+                  // parse JS
+                  if (jstokenizer != undefined) {
+                    const res = jstokenizer(
+                      text.substring(i),
+                      {},
+                      /^<\/script\s*>/i,
+                    );
+                    if (res["tokens"].length) {
+                      tokens = tokens.concat(res["tokens"]);
+                      i += res["inputEnd"];
+                    }
+                  }
+                }
+                break;
+              } else if (ch == "=") {
+                addToken(T_OPERATOR, ch);
+                i++;
+                // find value
+                const anc = text[i];
+                if (anc == "'" || anc == '"') {
+                  // reads value inside string
+                  addToken(T_VALUE_OPER, anc);
+                  let slashes = 0; // number of backslashes
+                  // regular expression that is used to match all characters except the string determiner and backslashes
+                  const re = anc == "'" ? /^[^'\\]+/ : /^[^"\\]+/;
+                  i++;
+                  while (i < len) {
+                    const str = text.substring(i).match(re);
+                    if (str) {
+                      addToken(T_VALUE, str[0]);
+                      i += str[0].length;
+                      slashes = 0;
+                    }
+                    const char = text[i];
+                    if (char == "\\") {
+                      const slsh = text.substring(i).match(/[\\]+/)[0];
+                      addToken(T_VALUE, slsh);
+                      slashes += slsh.length;
+                      i += slsh.length;
+                    } else if (char == anc) {
+                      i++;
+                      if (slashes % 2 == 0) {
+                        addToken(T_VALUE_OPER, char);
+                        break; // even number of backslashes means string character is not escaped
+                      } else {
+                        addToken(T_VALUE, char);
+                      }
+                    }
+                  }
+                } else {
+                  const val = next.match(valueRE)[0];
+                  i += val.length;
+                  addToken(T_VALUE, val);
+                }
+              } else {
+                const opers = ch.match(operatorRE);
+                if (opers) {
+                  // operators
+                  addToken(T_OPERATOR, opers[0]);
+                  i += opers[0].length;
+                } else {
+                  // attribute
+                  const attr = text.substring(i).match(attributeRE)[0];
+                  i += attr.length;
+                  addToken(T_ATTRIBUTE, attr);
+                }
+              }
+            }
+          } else {
+            // let previous tag to be OTHER type
+            tokens[tokens.length - 1].type = T_OTHER;
+          }
+        } else {
+          addToken(T_OTHER, char);
+          i++;
+        }
+      } else if (char == "&") {
+        const spec = next.match(specialRE);
+        if (spec) {
+          addToken(T_SPECIAL, spec[0]);
+          i += spec[0].length;
+        } else {
+          addToken(T_OTHER, char);
+          i++;
+        }
+      } else {
+        const val = next.match(textRE)[0];
+        i += val.length;
+        addToken(T_OTHER, val);
+      }
+    }
+    return { tokens: tokens, inputEnd: i };
+
+    /**
+     * @param {string} type
+     * @param {string} token
+     */
+    function addToken(type, token) {
+      tokens.push({
+        type: type,
+        token: token,
+      });
+    }
+  }
+
+  w["Colorful"]["tokenizers"]["HTML"] = tokenize;
+  w["Colorful"]["tokenClasses"] = Object.assign(w["Colorful"]["tokenClasses"], {
+    [T_TAG]: "tag html-tag",
+    [T_ATTRIBUTE]: "attribute html-attribute",
+    [T_OPERATOR]: "operator html-operator",
+    [T_COMMENT]: "comment html-comment",
+    [T_OTHER]: "other",
+    [T_SPECIAL]: "html-special",
+    [T_TAG_PUCT_L]: "operator tag-puctuation-left",
+    [T_TAG_PUCT_R]: "operator tag-puctuation-right",
+    [T_VALUE_OPER]: "value value_operator",
+    [T_VALUE]: "value",
+  });
+})(window);
+
+},{}]},{},[1]);

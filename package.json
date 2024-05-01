@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "HTML & JS syntax highlighter",
   "scripts": {
-    "fmt": "prettier . --write"
+    "fmt": "prettier . --write",
+    "build": "npx grunt"
   },
   "repository": {
     "type": "git",
@@ -16,6 +17,9 @@
   },
   "homepage": "https://github.com/Roopesh2/Colorful#readme",
   "devDependencies": {
+    "grunt": "^1.6.1",
+    "grunt-browserify": "^6.0.0",
+    "grunt-contrib-uglify": "^5.2.2",
     "prettier": "^3.0.2"
   }
 }

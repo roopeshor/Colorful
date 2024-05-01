@@ -9,8 +9,6 @@
     <link rel="stylesheet" href="./main.css" />
     <!-- <script src="https://cdn.jsdelivr.net/gh/Roopesh2/Colorful@master/src/core.js" defer></script>
     <script src="https://cdn.jsdelivr.net/gh/Roopesh2/Colorful@master/src/JavaScript.js" defer></script> -->
-    <!-- <script src="../src/core.js" defer></script>
-    <script src="../src/JavaScript.js" defer></script> -->
     <script src="../src/core.js" defer></script>
     <script src="../src/HTML.js" defer></script>
     <script src="../src/JavaScript.js" defer></script>
@@ -24,28 +22,30 @@
       <div class="block">
         <p>HTML Code</p>
         <pre class="cf-HTML">
-&lt;html lang="en">
-	&lt;head>
-		&lt;meta charset="UTF-8" />
-		&lt;meta http-equiv="X-UA-Compatible" content="IE=edge" />
-		&lt;meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		&lt;title>Editor&lt;/title>
-		&lt;link rel="stylesheet" href="../src/style.css" />
-		&lt;link rel="stylesheet" href="./main.css" />
-		&lt;!-- &lt;script src="https://cdn.jsdelivr.net/gh/Roopesh2/Colorful@master/src/core.js" defer>&lt;/script>
-		&lt;script src="https://cdn.jsdelivr.net/gh/Roopesh2/Colorful@master/src/JavaScript.js" defer>&lt;/script> -->
-		&lt;!-- &lt;script src="../src/core.js" defer>&lt;/script>
-		&lt;script src="../src/JavaScript.js" defer>&lt;/script> -->
-		&lt;script src="../src/core.js" defer>&lt;/script>
-		&lt;script src="../src/HTML.js" defer>&lt;/script>
-		&lt;script src="../src/JavaScript.js" defer>&lt;/script>
-	&lt;/head>
-	&lt;body>
-		&lt;h1>Colorful!&lt;/h1>
-	&lt;/body>
-&lt;/html>
-</pre>
-      </di>
+&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+	&lt;meta charset="UTF-8" /&gt;
+	&lt;meta http-equiv="X-UA-Compatible" content="IE=edge" /&gt;
+	&lt;meta name="viewport" content="width=device-width, initial-scale=1.0" /&gt;
+	&lt;title&gt;Editor&lt;/title&gt;
+	&lt;link rel="stylesheet" href="../src/style.css" /&gt;
+	&lt;link rel="stylesheet" href="./main.css" /&gt;
+	&lt;!-- &lt;script src="https://cdn.jsdelivr.net/gh/Roopesh2/Colorful@master/src/core.js" defer&gt;&lt;/script&gt;
+	&lt;script src="https://cdn.jsdelivr.net/gh/Roopesh2/Colorful@master/src/JavaScript.js" defer&gt;&lt;/script&gt; --&gt;
+	&lt;!-- &lt;script src="../src/core.js" defer&gt;&lt;/script&gt;
+	&lt;script src="../src/JavaScript.js" defer&gt;&lt;/script&gt; --&gt;
+	&lt;script src="../src/core.js" defer&gt;&lt;/script&gt;
+	&lt;script src="../src/HTML.js" defer&gt;&lt;/script&gt;
+	&lt;script src="../src/JavaScript.js" defer&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+	&lt;h1&gt;Colorful!&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre
+        >
+      </div>
       <div class="block">
         <p>The source code of JS parser with line numbers:</p>
         <pre class="cf-JS" lineNumbering>
@@ -61,7 +61,7 @@
 	// prettier-ignore
 	// RegExes
 	const KeywordRE = ["async","await","break","case","catch","class","const","continue","debugger","default","delete","do","else","export","extends","false","finally","for","function","if","implements","import","in","instanceof","interface","let","new","null","package","return","static","super","switch","this","throw","true","try","typeof","undefined","var","void","while","with","yield"];
-	const operatorRE = /[-=+*/%!<>&|:?]/;
+	const operatorRE = /[-=+*/%!&lt;&gt;&|:?]/;
 	const nameCharRE = /^[\wÀ-￿$]+/u; // \w, $ and from \u00c0 to \uffff
 
 	// modified regex from Prism: https://github.com/PrismJS/prism/blob/master/components/prism-javascript.js#L21
@@ -130,7 +130,7 @@
 		let i = 0;
 		let prevTkn;
 		let char;
-		while (i < len) {
+		while (i &lt; len) {
 			// debugger;
 			word = text.substring(i).match(nameCharRE);
 			let isNum;
@@ -177,7 +177,7 @@
 				// regular expression that is used to match all characters except the string determiner and backslashes
 				const re =
 					char == "'" ? /^[^'\\]+/ : char == '"' ? /^[^"\\]+/ : /^[^`${]+/;
-				while (i < len) {
+				while (i &lt; len) {
 					str = text.substring(i).match(re);
 					if (str) {
 						addToken(T_STRING, str[0]);
@@ -249,11 +249,11 @@
 						addToken(T_OPERATOR);
 						i++;
 					}
-				} else if (next2 == "=>") {
+				} else if (next2 == "=&gt;") {
 					// arrow expression
 					if (prevTkn.type == T_NAME) {
 						/* highlights single argument
-							arg => {...}
+							arg =&gt; {...}
 							^^^
 						*/
 						prevTkn.type = T_ARGUMENT;
@@ -262,12 +262,12 @@
 						scope = "function"; // after this should be a function
 					} else if (/\)\s*$/.test(prevTkn.token)) {
 						/* reads multiple arguments
-							(arg1, arg2, argn) => {...}
+							(arg1, arg2, argn) =&gt; {...}
 								^^^^  ^^^^  ^^^^
 						*/
 						const initialScopeLevel = scopeTree.length; // current scope
 						const toReadArray = tokens.slice(-1); // array of tokens to read
-						for (let k = tokens.length - 2; k >= 0; k--) {
+						for (let k = tokens.length - 2; k &gt;= 0; k--) {
 							const tk = tokens[k];
 							toReadArray.push(tk);
 							if (tk.type == T_OTHER && tk.scopeLevel == initialScopeLevel) {
@@ -281,7 +281,7 @@
 						// reads arguments
 						readArgumentsInTokens(toReadArray, initialScopeLevel + 1);
 					}
-					addToken(T_OPERATOR, next2); // add `=>` to tokens
+					addToken(T_OPERATOR, next2); // add `=&gt;` to tokens
 					i += 2;
 				} else {
 					addToken(T_OPERATOR); // regular operator
@@ -330,7 +330,7 @@
 				scopeTree.push(scope);
 				scope = char;
 			} else if (char == "}" || char == ")" || char == "]") {
-				if (scopeTree.length > 0) {
+				if (scopeTree.length &gt; 0) {
 					if (
 						char == "}" &&
 						argScope.length &&
@@ -390,7 +390,7 @@
 			*/
 		function readArgumentsInTokens(tks, base = 0) {
 			let nos = 0;
-			for (let k = 0; k < tks.length; k++) {
+			for (let k = 0; k &lt; tks.length; k++) {
 				const tk = tks[k];
 				if (
 					(tk.type == T_NAME || tk.type == T_BUILTIN) &&
@@ -435,7 +435,7 @@
 			const prevt = (prevTkn.token || "").trim();
 			const p2revt = tokens[tokens.length - 2] || {};
 			if (
-				KeywordRE.indexOf(word) >= 0 || // global keywords
+				KeywordRE.indexOf(word) &gt;= 0 || // global keywords
 				((word == "get" || word == "set") && scopeTree.slice(-1)[0] == "class") // get/set inside class scope
 			) {
 				// Keyword
@@ -448,7 +448,7 @@
 					scope = word;
 				}
 			} else if (
-				(builtInObject.indexOf(word) >= 0 &&
+				(builtInObject.indexOf(word) &gt;= 0 &&
 					!/^(function|var|const|let|interface)/.test(prevt) &&
 					!/\.$/.test(prevt)) ||
 				(word == "constructor" && scopeTree.slice(-1)[0] == "class")
@@ -458,7 +458,7 @@
 			} else if (isObjectProprty(prevt, p2revt)) {
 				// object property
 				addToken(T_OBJECTPROP, word);
-			} else if (argNames.indexOf(word) > -1 || word == "arguments") {
+			} else if (argNames.indexOf(word) &gt; -1 || word == "arguments") {
 				// argument inside function clause
 				addToken(T_ARGUMENT, word);
 			} else {
@@ -485,7 +485,8 @@
 		[T_REGEX]: "regex",
 		[T_OPERATOR]: "operator js-operator",
 	});
-})(window);</pre
+})(window);
+</pre
         >
       </div>
     </div>
