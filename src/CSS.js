@@ -1,4 +1,3 @@
-//@ts-check
 (function (w) {
   // check for core.js
   if (!window["Colorful"]) {
@@ -20,7 +19,7 @@
     T_UNIT = "CSS-UNIT",
     T_VALUE = "CSS-VALUE";
 
-  var operatorRE = /^[!=$^@~|-+*/%&:<>]+/;
+  var operatorRE = /^[!=$^@~|\-+*/%&:<>]+/;
   var attributeRE = /^[^=]+/;
   var commentRE = /^(\/\*[\s\S]*\*\/|\/\*[\s\S]*)/;
   var selectorRE = /^[^{]+/;
@@ -167,16 +166,13 @@
   }
 
   w["Colorful"]["tokenizers"]["CSS"] = tokenize;
-  w["Colorful"]["tokenTypes"] = Object.assign(
-    w["Colorful"]["tokenTypes"],
-    {
-      [T_ATTRIBUTE]: "attribute css-attribute",
-      [T_OPERATOR]: "operator css-operator",
-      [T_COMMENT]: "comment css-comment",
-      [T_OTHER]: "other",
-      [T_VALUE_OPER]: "value value_operator",
-      [T_SELECTOR]: "selector css-selector",
-      [T_VALUE]: "value",
-    },
-  );
+  w["Colorful"]["tokenClasses"] = Object.assign(w["Colorful"]["tokenClasses"], {
+    [T_ATTRIBUTE]: "attribute css-attribute",
+    [T_OPERATOR]: "operator css-operator",
+    [T_COMMENT]: "comment css-comment",
+    [T_OTHER]: "other",
+    [T_VALUE_OPER]: "value value_operator",
+    [T_SELECTOR]: "selector css-selector",
+    [T_VALUE]: "value",
+  });
 })(window);

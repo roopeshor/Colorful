@@ -7,9 +7,9 @@
     return;
   }
 
+  // prettier-ignore
   // RegExes
-  const KeywordRE =
-    /^(async|await|break|case|catch|class|const|continue|debugger|default|delete|do|else|export|extends|false|finally|for|function|if|implements|import|in|instanceof|interface|let|new|null|package|return|static|super|switch|this|throw|true|try|typeof|undefined|var|void|while|with|yield)$/;
+  const KeywordRE = ["async","await","break","case","catch","class","const","continue","debugger","default","delete","do","else","export","extends","false","finally","for","function","if","implements","import","in","instanceof","interface","let","new","null","package","return","static","super","switch","this","throw","true","try","typeof","undefined","var","void","while","with","yield"];
   const operatorRE = /[-=+*/%!<>&|:?]/;
   const nameCharRE = /^[\wÀ-￿$]+/u; // \w, $ and from \u00c0 to \uffff
 
@@ -20,9 +20,10 @@
   const commentRE = /(\/\*[\s\S]*?\*\/|\/\*[\s\S]*|\/\/.*)/;
   const regexRE =
     /^\/((?![*+?])(?:[^\r\n[/\\]|\\.|\[(?:[^\r\n\]\\]|\\.)*\])+)\/[gimyus]*/;
+
+  // prettier-ignore
   // builtIn objects
-  const builtInObject =
-    /^(AggregateError|Buffer|Array|ArrayBuffer|AsyncFunction|AsyncGenerator|AsyncGeneratorFunction|Atomics|BigInt|BigInt64Array|BigUint64Array|Boolean|DataView|Date|Error|EvalError|Float32Array|Float64Array|Function|Generator|GeneratorFunction|Int16Array|Int32Array|Int8Array|InternalError|Intl|JSON|Map|Math|Number|Object|Promise|Proxy|RangeError|ReferenceError|Reflect|RegExp|Set|SharedArrayBuffer|String|Symbol|SyntaxError|TypeError|URIError|Uint16Array|Uint32Array|Uint8Array|Uint8ClampedArray|WeakMap|WeakSet|WebAssembly)$/;
+  const builtInObject = ["AggregateError","Buffer","Array","ArrayBuffer","AsyncFunction","AsyncGenerator","AsyncGeneratorFunction","Atomics","BigInt","BigInt64Array","BigUint64Array","Boolean","DataView","Date","Error","EvalError","Float32Array","Float64Array","Function","Generator","GeneratorFunction","Int16Array","Int32Array","Int8Array","InternalError","Intl","JSON","Map","Math","Number","Object","Promise","Proxy","RangeError","ReferenceError","Reflect","RegExp","Set","SharedArrayBuffer","String","Symbol","SyntaxError","TypeError","URIError","Uint16Array","Uint32Array","Uint8Array","Uint8ClampedArray","WeakMap","WeakSet","WebAssembly"];
   const whitespace = /[\s]+/;
   // types of tokens
   const T_NAME = "JS-NAME";
@@ -106,7 +107,7 @@
       prevTkn = tokens.slice(-1)[0] || emptyToken; // previous token
       /* after matching a word there will be a non-unicode characters (punctuations, operators, etc.) that will follow word. Following code analyses it */
       char = text[i]; // next character
-      const next2 = text.substr(i, 2); // next two characters
+      const next2 = text.substring(i, i + 2); // next two characters
       if (whitespace.test(char)) {
         // finds next whitespace characters
         const space = text.substring(i).match(whitespace)[0];
@@ -124,11 +125,7 @@
         let slashes = 0; // number of backslashes
         // regular expression that is used to match all characters except the string determiner and backslashes
         const re =
-          char == "'"
-            ? /^[^'\\]+/
-            : char == '"'
-            ? /^[^"\\]+/
-            : /^[^`${]+/;
+          char == "'" ? /^[^'\\]+/ : char == '"' ? /^[^"\\]+/ : /^[^`${]+/;
         while (i < len) {
           str = text.substring(i).match(re);
           if (str) {
@@ -148,7 +145,7 @@
             // even number of backslashes means string character is not escaped
             if (slashes % 2 == 0) break;
             else slashes = 0; // else reset it
-          } else if (text.substr(i, 2) == "${") {
+          } else if (text.substring(i, i + 2) == "${") {
             // only for multiline string
             // string interpolation ahead
             addToken(T_OPERATOR, "${"); // adds `${` as operator
@@ -222,10 +219,7 @@
             for (let k = tokens.length - 2; k >= 0; k--) {
               const tk = tokens[k];
               toReadArray.push(tk);
-              if (
-                tk.type == T_OTHER &&
-                tk.scopeLevel == initialScopeLevel
-              ) {
+              if (tk.type == T_OTHER && tk.scopeLevel == initialScopeLevel) {
                 // reached `(`
                 tokens.splice(k);
                 break;
@@ -256,8 +250,7 @@
         const pprev = tokens.slice(-2)[0] || emptyToken;
         const isFunctionClause =
           (prev.token.match(/function\s*$/) && prevt == T_KEY) ||
-          (pprev.token.match(/function\s*$/) &&
-            pprev.type == T_KEY) ||
+          (pprev.token.match(/function\s*$/) && pprev.type == T_KEY) ||
           scopeTree.slice(-1)[0] == "class";
         addToken(T_OTHER);
         i++;
@@ -317,8 +310,7 @@
       const tl = tokens.length;
       if (
         tokens[tl - 1].type == (tokens[tl - 2] || {}).type &&
-        tokens[tl - 1].scopeLevel ==
-          (tokens[tl - 2] || {}).scopeLevel &&
+        tokens[tl - 1].scopeLevel == (tokens[tl - 2] || {}).scopeLevel &&
         tokens[tl - 1].type != T_OTHER
       ) {
         tokens[tl - 2].token += tokens[tl - 1].token;
@@ -392,9 +384,8 @@
       const prevt = (prevTkn.token || "").trim();
       const p2revt = tokens[tokens.length - 2] || {};
       if (
-        KeywordRE.test(word) || // global keywords
-        ((word == "get" || word == "set") &&
-          scopeTree.slice(-1)[0] == "class") // get/set inside class scope
+        KeywordRE.indexOf(word) >= 0 || // global keywords
+        ((word == "get" || word == "set") && scopeTree.slice(-1)[0] == "class") // get/set inside class scope
       ) {
         // Keyword
         addToken(T_KEY, word);
@@ -406,7 +397,7 @@
           scope = word;
         }
       } else if (
-        (builtInObject.test(word) &&
+        (builtInObject.indexOf(word) >= 0 &&
           !/^(function|var|const|let|interface)/.test(prevt) &&
           !/\.$/.test(prevt)) ||
         (word == "constructor" && scopeTree.slice(-1)[0] == "class")
@@ -428,22 +419,19 @@
   w["Colorful"]["tokenizers"]["JS"] = tokenize;
 
   // add types of token used here to tokenType object for parser to classify tokens
-  w["Colorful"]["tokenTypes"] = Object.assign(
-    w["Colorful"]["tokenTypes"],
-    {
-      [T_NAME]: "name js-name",
-      [T_OBJECTPROP]: "objprop",
-      [T_OBJECTPROPINOBJ]: "objprop object-prop-in-obj",
-      [T_KEY]: "keyword js-keyword",
-      [T_COMMENT]: "comment js-comment",
-      [T_NUMBER]: "number js-number",
-      [T_ARGUMENT]: "argument",
-      [T_BUILTIN]: "builtIn js-builtIn",
-      [T_METHOD]: "method js-method",
-      [T_METHODASOBJPROP]: "method js-method method-as-obj-prop",
-      [T_STRING]: "string js-string",
-      [T_REGEX]: "regex",
-      [T_OPERATOR]: "operator js-operator",
-    },
-  );
+  w["Colorful"]["tokenClasses"] = Object.assign(w["Colorful"]["tokenClasses"], {
+    [T_NAME]: "name js-name",
+    [T_OBJECTPROP]: "objprop",
+    [T_OBJECTPROPINOBJ]: "objprop object-prop-in-obj",
+    [T_KEY]: "keyword js-keyword",
+    [T_COMMENT]: "comment js-comment",
+    [T_NUMBER]: "number js-number",
+    [T_ARGUMENT]: "argument",
+    [T_BUILTIN]: "builtIn js-builtIn",
+    [T_METHOD]: "method js-method",
+    [T_METHODASOBJPROP]: "method js-method method-as-obj-prop",
+    [T_STRING]: "string js-string",
+    [T_REGEX]: "regex",
+    [T_OPERATOR]: "operator js-operator",
+  });
 })(window);

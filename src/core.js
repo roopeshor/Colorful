@@ -5,7 +5,7 @@
       enableLineNumbering: true,
     },
     tokenizers: {}, // tokenizers
-    tokenTypes: {}, // includes tokens except `OTHER` type
+    tokenClasses: {}, // includes tokens except `OTHER` type
     extensions: {}, // includes tokens except `OTHER` type
     /**
      * Takes parsed HTML string and wraps it in a `code` tag
@@ -24,10 +24,9 @@
           complete += i;
           if (i < lineCount) complete += "\n";
         }
-        complete +=
-          "</code><code class='code-cf'>" + markuped + "</code>";
+        complete += `</code><code class='code-cf'>${markuped}</code>`;
       } else {
-        complete = "<code class='code-cf'>" + markuped + "</code>";
+        complete = `<code class='code-cf'>${markuped}</code>`;
       }
       return complete;
     },
@@ -46,20 +45,14 @@
       const out = tokenize(text);
       const markuped = this.parse(out.tokens);
       time = window.performance.now() - time;
-      container.innerHTML = w.Colorful.finishUp(
-        cfg,
-        text,
-        markuped,
-        container,
-      );
+      container.innerHTML = w.Colorful.finishUp(cfg, text, markuped, container);
       const speed = ((text.length / 1024 / time) * 1000).toFixed(3); // kb/s
       console.log(
         `Language: ${lang}
-total code analysed: ${(text.length / 1024).toFixed(3)} KiB\nfound: ${
-          out.tokens.length
-        } tokens\ncompile time: ${time.toFixed(
-          4,
-        )} ms\ncompile speed: ${speed} KiB/s`,
+total code analysed: ${(text.length / 1024).toFixed(3)} KiB
+found: ${out.tokens.length} tokens
+compile time: ${time.toFixed(4)} ms
+compile speed: ${speed} KiB/s`,
       );
     },
 
@@ -70,20 +63,12 @@ total code analysed: ${(text.length / 1024).toFixed(3)} KiB\nfound: ${
      */
     parse: function parse(tokens) {
       let formatted = "";
-      const d = this.tokenTypes;
       for (let i = 0; i < tokens.length; i++) {
         const tkn = tokens[i];
         const tokenType = tkn.type;
-        const token = tkn.token
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;");
+        const token = tkn.token.replace(/&/g, "&amp;").replace(/</g, "&lt;");
         if (tokenType != "OTHER") {
-          formatted +=
-            '<span class="token ' +
-            d[tokenType] +
-            '">' +
-            token +
-            "</span>";
+          formatted += `<span class="token ${this.tokenClasses[tokenType]}">${token}</span>`;
         } else {
           formatted += token;
         }

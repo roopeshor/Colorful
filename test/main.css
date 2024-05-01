@@ -1,0 +1,21 @@
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  padding: 0px;
+  font-family: sans-serif;
+  background-color: #38618a;
+  color: white;
+}
+
+.container {
+  height: 100%;
+  width: 100%;
+  padding: 0px;
+}
+
+.block {
+  border: 1px solid #222;
+  padding: 5px;
+}

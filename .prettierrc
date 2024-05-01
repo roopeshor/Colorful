@@ -1,4 +1,5 @@
 {
   "endOfLine": "lf",
-  "printWidth": 70
+  "printWidth": 80,
+  "singleQuote": false
 }

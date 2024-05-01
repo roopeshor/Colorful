@@ -37,9 +37,9 @@
     const jstokenizer = window["Colorful"]["tokenizers"]["JS"];
     while (i < len) {
       const char = text[i];
-      const next = text.substr(i);
+      const next = text.substring(i);
       if (char == "<") {
-        if (next.substr(0, 4) == "<!--") {
+        if (next.substring(0, 4) == "<!--") {
           // comment ahead
           const comment = next.match(commentRE)[0];
           i += comment.length;
@@ -50,7 +50,7 @@
           i += puctuations.length;
 
           // find tag name
-          const tagName = text.substr(i).match(tagNameRE);
+          const tagName = text.substring(i).match(tagNameRE);
           if (tagName) {
             addToken(T_TAG, tagName[0]);
             i += tagName[0].length;
@@ -65,7 +65,7 @@
                   // parse JS
                   if (jstokenizer != undefined) {
                     const res = jstokenizer(
-                      text.substr(i),
+                      text.substring(i),
                       {},
                       /^<\/script\s*>/i,
                     );
@@ -97,9 +97,7 @@
                     }
                     const char = text[i];
                     if (char == "\\") {
-                      const slsh = text
-                        .substring(i)
-                        .match(/[\\]+/)[0];
+                      const slsh = text.substring(i).match(/[\\]+/)[0];
                       addToken(T_VALUE, slsh);
                       slashes += slsh.length;
                       i += slsh.length;
@@ -126,7 +124,7 @@
                   i += opers[0].length;
                 } else {
                   // attribute
-                  const attr = text.substr(i).match(attributeRE)[0];
+                  const attr = text.substring(i).match(attributeRE)[0];
                   i += attr.length;
                   addToken(T_ATTRIBUTE, attr);
                 }
@@ -170,19 +168,16 @@
   }
 
   w["Colorful"]["tokenizers"]["HTML"] = tokenize;
-  w["Colorful"]["tokenTypes"] = Object.assign(
-    w["Colorful"]["tokenTypes"],
-    {
-      [T_TAG]: "tag html-tag",
-      [T_ATTRIBUTE]: "attribute html-attribute",
-      [T_OPERATOR]: "operator html-operator",
-      [T_COMMENT]: "comment html-comment",
-      [T_OTHER]: "other",
-      [T_SPECIAL]: "html-special",
-      [T_TAG_PUCT_L]: "operator tag-puctuation-left",
-      [T_TAG_PUCT_R]: "operator tag-puctuation-right",
-      [T_VALUE_OPER]: "value value_operator",
-      [T_VALUE]: "value",
-    },
-  );
+  w["Colorful"]["tokenClasses"] = Object.assign(w["Colorful"]["tokenClasses"], {
+    [T_TAG]: "tag html-tag",
+    [T_ATTRIBUTE]: "attribute html-attribute",
+    [T_OPERATOR]: "operator html-operator",
+    [T_COMMENT]: "comment html-comment",
+    [T_OTHER]: "other",
+    [T_SPECIAL]: "html-special",
+    [T_TAG_PUCT_L]: "operator tag-puctuation-left",
+    [T_TAG_PUCT_R]: "operator tag-puctuation-right",
+    [T_VALUE_OPER]: "value value_operator",
+    [T_VALUE]: "value",
+  });
 })(window);
