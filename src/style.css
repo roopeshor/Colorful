@@ -51,7 +51,7 @@
   color: #44c4f8;
 }
 .code-cf .argument {
-  color: #fc7c49;
+  text-decoration: underline;
 }
 .code-cf .regex {
   color: #f7aa67;

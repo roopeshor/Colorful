@@ -8,23 +8,25 @@
   }
 
   // prettier-ignore
-  // RegExes
-  const KeywordRE = ["async","await","break","case","catch","class","const","continue","debugger","default","delete","do","else","export","extends","false","finally","for","function","if","implements","import","in","instanceof","interface","let","new","null","package","return","static","super","switch","this","throw","true","try","typeof","undefined","var","void","while","with","yield"];
+  const Keywords = ["async","await","break","case","catch","class","const","continue","debugger","default","delete","do","else","export","extends","false","finally","for","function","if","implements","import","in","instanceof","interface","let","new","null","package","return","static","super","switch","this","throw","true","try","typeof","undefined","var","void","while","with","yield"];
+  // prettier-ignore
+  const builtInObject = ["AggregateError","Buffer","Array","ArrayBuffer","AsyncFunction","AsyncGenerator","AsyncGeneratorFunction","Atomics","BigInt","BigInt64Array","BigUint64Array","Boolean","DataView","Date","Error","EvalError","Float32Array","Float64Array","Function","Generator","GeneratorFunction","Int16Array","Int32Array","Int8Array","InternalError","Intl","JSON","Map","Math","Number","Object","Promise","Proxy","RangeError","ReferenceError","Reflect","RegExp","Set","SharedArrayBuffer","String","Symbol","SyntaxError","TypeError","URIError","Uint16Array","Uint32Array","Uint8Array","Uint8ClampedArray","WeakMap","WeakSet","WebAssembly"];
+  // prettier-ignore
+  const ScopingKW = ["function","if","do","while","for","class","catch","else","finally","switch","try"];
+  const Initializers = ["function", "var", "const", "let", "interface"];
+
   const operatorRE = /[-=+*/%!<>&|:?]/;
   const nameCharRE = /^[\wÀ-￿$]+/u; // \w, $ and from \u00c0 to \uffff
+  const commentRE = /(\/\*[\s\S]*?\*\/|\/\*[\s\S]*|\/\/.*)/;
+  const whitespace = /[\s]+/;
 
   // modified regex from Prism: https://github.com/PrismJS/prism/blob/master/components/prism-javascript.js#L21
   const number =
     /^((?:(?:0[xX](?:[\dA-Fa-f](?:_[\dA-Fa-f])?)+|0[bB](?:[01](?:_[01])?)+|0[oO](?:[0-7](?:_[0-7])?)+)n?|(?:\d(?:_\d)?)+n|NaN|Infinity)\b|(?:(?:\d(?:_\d)?)+\.?(?:\d(?:_\d)?)*|\B\.(?:\d(?:_\d)?)+)(?:[Ee][+-]?(?:\d(?:_\d)?)+)?)/;
 
-  const commentRE = /(\/\*[\s\S]*?\*\/|\/\*[\s\S]*|\/\/.*)/;
   const regexRE =
     /^\/((?![*+?])(?:[^\r\n[/\\]|\\.|\[(?:[^\r\n\]\\]|\\.)*\])+)\/[gimyus]*/;
 
-  // prettier-ignore
-  // builtIn objects
-  const builtInObject = ["AggregateError","Buffer","Array","ArrayBuffer","AsyncFunction","AsyncGenerator","AsyncGeneratorFunction","Atomics","BigInt","BigInt64Array","BigUint64Array","Boolean","DataView","Date","Error","EvalError","Float32Array","Float64Array","Function","Generator","GeneratorFunction","Int16Array","Int32Array","Int8Array","InternalError","Intl","JSON","Map","Math","Number","Object","Promise","Proxy","RangeError","ReferenceError","Reflect","RegExp","Set","SharedArrayBuffer","String","Symbol","SyntaxError","TypeError","URIError","Uint16Array","Uint32Array","Uint8Array","Uint8ClampedArray","WeakMap","WeakSet","WebAssembly"];
-  const whitespace = /[\s]+/;
   // types of tokens
   const T_NAME = "JS-NAME";
   const T_OBJECTPROP = "JS-OBJECTPROP";
@@ -52,7 +54,7 @@
     "]": "breakOnBracketUnmatch",
   };
   /**
-   * tokenize input text
+   * Tokenize input text
    * @param {string} text text to be tokenised
    * @param {Object} [ErrHandler={}] defines how errors should be handled.
    * Only handles bracket/brace/paren un matches only in one way: either break and return tokens or continue.
@@ -62,36 +64,36 @@
    *  breakOnParenUnmatch: true/false,
    *  breakOnBracketUnmatch: true/false
    * }
-   * @param {RegExp} EnderRE ends parsing at this expression.
+   * @param {RegExp} endRE ends parsing at this expression.
    *                         used in parseing JS code inside HTML code
    * @return {Object}
    *
    * @example tokenize("...", { breakOnBraceUnmatch:true }) // returns tokens when brace not matches or EOF reached
    */
-  function tokenize(text, ErrHandler = {}, EnderRE = null) {
+  function tokenize(text, ErrHandler = {}, endRE = null) {
     const len = text.length;
     let tokens = [];
     let word;
-    const scopeTree = []; // list like structure defines where current tokenisation is happening
-    const argNames = []; // list of argument names
+    const scopeTree = []; // Keeps scope tree
+    const argNames = []; // list of argument names (inside functions)
     const argScope = []; // cumulated scope number of arguments
     let scope = ""; // recent scope
     let i = 0;
-    let prevTkn;
+    let prevToken;
     let char;
     while (i < len) {
-      // debugger;
-      word = text.substring(i).match(nameCharRE);
-      let isNum;
-      if (EnderRE && EnderRE.test(text.substring(i))) {
+      let upcoming = text.substring(i);
+      word = upcoming.match(nameCharRE);
+      let isNumber;
+      if (endRE && endRE.test(upcoming)) {
         return { tokens: tokens, inputEnd: i };
       }
       if (word) {
         let v = word[0];
-        isNum = v.match(number);
-        prevTkn = tokens.slice(-1)[0] || emptyToken;
-        if (isNum) {
-          v = text.substring(i).match(number)[0];
+        isNumber = v.match(number);
+        prevToken = tokens[tokens.length - 1] || emptyToken;
+        if (isNumber) {
+          v = upcoming.match(number)[0];
           addToken(T_NUMBER, v);
         } else {
           readWordToken(v);
@@ -104,14 +106,14 @@
         i += w.length;
       }
       if (i == len) break; // break if EOF
-      prevTkn = tokens.slice(-1)[0] || emptyToken; // previous token
+      prevToken = tokens[tokens.length - 1] || emptyToken; // previous token
       /* after matching a word there will be a non-unicode characters (punctuations, operators, etc.) that will follow word. Following code analyses it */
       char = text[i]; // next character
       const next2 = text.substring(i, i + 2); // next two characters
       if (whitespace.test(char)) {
         // finds next whitespace characters
         const space = text.substring(i).match(whitespace)[0];
-        if (prevTkn.token) prevTkn.token += space;
+        if (prevToken.token) prevToken.token += space;
         // if a token exists in the list add whitespaces to it
         else addToken(T_NAME, space); // if there is no previous tokens
         i += space.length;
@@ -125,7 +127,7 @@
         let slashes = 0; // number of backslashes
         // regular expression that is used to match all characters except the string determiner and backslashes
         const re =
-          char == "'" ? /^[^'\\]+/ : char == '"' ? /^[^"\\]+/ : /^[^`${]+/;
+          char == "'" ? /^[^'\\]+/ : char == '"' ? /^[^"\\]+/ : /^((?!`|\${).|\n)+/;
         while (i < len) {
           str = text.substring(i).match(re);
           if (str) {
@@ -159,13 +161,13 @@
               addToken(T_OPERATOR, "}");
               i++;
             } else if (text[i - 1] == "\n") {
-              tokens.slice(-1)[0].token += "\n"; // quick fix
+              tokens[tokens.length - 1].token += "\n"; // quick fix
             }
           }
         }
       } else if (operatorRE.test(char)) {
         const nxt = text.substring(i);
-        const prevt = prevTkn.type;
+        const prevt = prevToken.type;
         if (next2 == "//" || next2 == "/*") {
           // comment ahead
           const comment = nxt.match(commentRE)[0];
@@ -174,7 +176,7 @@
         } else if (
           char == "/" &&
           !(
-            (prevt == T_NAME && !/^\s+$/.test(prevTkn.token)) ||
+            (prevt == T_NAME && !/^\s+$/.test(prevToken.token)) ||
             prevt == T_OBJECTPROP ||
             prevt == T_NUMBER
           ) &&
@@ -184,7 +186,7 @@
           let regExAhead = true;
           const tk = (tokens[tokens.length - 2] || {}).type;
           if (
-            prevTkn.type == T_COMMENT &&
+            prevToken.type == T_COMMENT &&
             (tk == T_NAME || tk == T_OBJECTPROP || tk == T_NUMBER)
           ) {
             regExAhead = false;
@@ -200,16 +202,16 @@
           }
         } else if (next2 == "=>") {
           // arrow expression
-          if (prevTkn.type == T_NAME) {
+          if (prevToken.type == T_NAME) {
             /* highlights single argument
               arg => {...}
               ^^^
             */
-            prevTkn.type = T_ARGUMENT;
-            argNames.push(prevTkn.token.trim()); // trim the token to get arguments name
-            argScope.push((argScope.slice(-1)[0] || 0) + 1);
-            scope = "function"; // after this should be a function
-          } else if (/\)\s*$/.test(prevTkn.token)) {
+            prevToken.type += " " + T_ARGUMENT;
+            argNames.push(prevToken.token.trim()); // trim the token to get arguments name
+            argScope.push((argScope[argScope.length - 1] || 0) + 1);
+            scope = "function"; // start function scope
+          } else if (/\)\s*$/.test(prevToken.token)) {
             /* reads multiple arguments
               (arg1, arg2, argn) => {...}
                ^^^^  ^^^^  ^^^^
@@ -237,31 +239,31 @@
           i++;
           if (
             char == ":" &&
-            scopeTree.slice(-1)[0] == "{" &&
-            prevTkn.type == T_NAME
+            scopeTree[scopeTree.length - 1] == "{" &&
+            prevToken.type == T_NAME
           ) {
-            prevTkn.type = T_OBJECTPROPINOBJ;
+            prevToken.type = T_OBJECTPROPINOBJ;
           }
         }
       } else if (char == "(") {
         // function name
-        const prev = prevTkn;
-        const prevt = prev.type;
-        const pprev = tokens.slice(-2)[0] || emptyToken;
+        const prevt = prevToken.type;
+        const pprevToken = tokens[tokens.length - 2] || emptyToken;
         const isFunctionClause =
-          (prev.token.match(/function\s*$/) && prevt == T_KEY) ||
-          (pprev.token.match(/function\s*$/) && pprev.type == T_KEY) ||
-          scopeTree.slice(-1)[0] == "class";
+          (prevToken.token.match(/function\s*$/) && prevt == T_KEY) ||
+          (pprevToken.token.match(/function\s*$/) && pprevToken.type == T_KEY) ||
+          scopeTree[scopeTree.length - 1] == "class";
         addToken(T_OTHER);
         i++;
         scopeTree.push("(");
         scope = "(";
         // makes name of function colored to method
-        if (prevt == T_NAME || prevt == T_OBJECTPROP) {
-          prev.type = T_METHOD;
-          if (isObjectProprty(pprev.token, tokens.slice(-4)[0])) {
-            prev.type = T_METHODASOBJPROP;
-          }
+        if (prevt == T_NAME || prevt == T_OBJECTPROP || prevt == T_ARGUMENT) {
+					if (isObjectProprty(pprevToken.token, tokens[tokens.length - 4])) {
+						prevToken.type = T_METHODASOBJPROP;
+          } else {
+						prevToken.type += " " +T_METHOD;
+					}
         }
         if (isFunctionClause) {
           // reads arguments
@@ -283,7 +285,7 @@
           if (
             char == "}" &&
             argScope.length &&
-            scopeTree.slice(-1)[0] == "function"
+            scopeTree[scopeTree.length - 1] == "function"
           ) {
             argNames.splice(argScope[argScope.length - 2]);
             argScope.pop();
@@ -300,7 +302,7 @@
       }
       mergeSameTypes();
     }
-    if (char == "\n") tokens.slice(-1)[0].token += "\n"; // quick fix
+    if (char == "\n") tokens[tokens.length - 1].token += "\n"; // quick fix
     return { tokens: tokens, inputEnd: i };
     /**
      * merges same type of consecutive tokens into
@@ -352,25 +354,26 @@
         }
       }
       tokens = tokens.concat(tks);
-      if (nos) argScope.push(nos + (argScope.slice(-1)[0] || 0) + 1);
+      if (nos) argScope.push(nos + (argScope[argScope.length - 1] || 0) + 1);
       scope = "function";
     }
 
     /**
      * checks if the current context is object property
-     * @param {string} previousToken
+     * @param {string} previousTokenContent
      * @param {Object} _2ndLastToken 2nd last token
      * @returns {boolean}
      */
-    function isObjectProprty(previousToken, _2ndLastToken) {
+    function isObjectProprty(previousTokenContent, _2ndLastToken) {
       return (
-        previousToken == "." &&
+        previousTokenContent == "." &&
         (/[)\]]/.test(_2ndLastToken.token) ||
-          (previousToken.length == 1 &&
+          (previousTokenContent.length == 1 &&
             (/^JS-(NAME|OBJECTPROP|ARGUMENT|BUILTIN|REGEX)$/.test(
               _2ndLastToken.type,
             ) ||
               // for this.someProperty or false.someProperties
+              // this is defined as keyword
               /(this|false|true)/.test(_2ndLastToken.token))))
       );
     }
@@ -381,33 +384,28 @@
      * @param {string} word
      */
     function readWordToken(word) {
-      const prevt = (prevTkn.token || "").trim();
-      const p2revt = tokens[tokens.length - 2] || {};
+      const prevTContent = (prevToken.token || "").trim();
+      const pprevT = tokens[tokens.length - 2] || {};
+      const lastScope = scopeTree[scopeTree.length - 1];
       if (
-        KeywordRE.indexOf(word) >= 0 || // global keywords
-        ((word == "get" || word == "set") && scopeTree.slice(-1)[0] == "class") // get/set inside class scope
+        Keywords.indexOf(word) >= 0 || // global keywords
+        ((word == "get" || word == "set") && lastScope == "class") // get/set inside class scope
       ) {
         // Keyword
         addToken(T_KEY, word);
-        if (
-          /(function|if|do|while|for|class|catch|else|finally|switch|try)/.test(
-            word,
-          )
-        ) {
-          scope = word;
-        }
+        if (ScopingKW.indexOf(word) >= 0) scope = word;
       } else if (
         (builtInObject.indexOf(word) >= 0 &&
-          !/^(function|var|const|let|interface)/.test(prevt) &&
-          !/\.$/.test(prevt)) ||
-        (word == "constructor" && scopeTree.slice(-1)[0] == "class")
+          !(Initializers.indexOf(prevTContent) >= 0) && // not being initialized
+          !/\.$/.test(prevTContent)) || // not a object property
+        (word == "constructor" && lastScope == "class") // color this also
       ) {
         // builtin objects word
         addToken(T_BUILTIN, word);
-      } else if (isObjectProprty(prevt, p2revt)) {
+      } else if (isObjectProprty(prevTContent, pprevT)) {
         // object property
         addToken(T_OBJECTPROP, word);
-      } else if (argNames.indexOf(word) > -1 || word == "arguments") {
+      } else if (argNames.indexOf(word) >= 0 || word == "arguments") {
         // argument inside function clause
         addToken(T_ARGUMENT, word);
       } else {
