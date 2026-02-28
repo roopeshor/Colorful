@@ -127,7 +127,11 @@
         let slashes = 0; // number of backslashes
         // regular expression that is used to match all characters except the string determiner and backslashes
         const re =
-          char == "'" ? /^[^'\\]+/ : char == '"' ? /^[^"\\]+/ : /^((?!`|\${).|\n)+/;
+          char == "'"
+            ? /^[^'\\]+/
+            : char == '"'
+              ? /^[^"\\]+/
+              : /^((?!`|\${).|\n)+/;
         while (i < len) {
           str = text.substring(i).match(re);
           if (str) {
@@ -251,7 +255,8 @@
         const pprevToken = tokens[tokens.length - 2] || emptyToken;
         const isFunctionClause =
           (prevToken.token.match(/function\s*$/) && prevt == T_KEY) ||
-          (pprevToken.token.match(/function\s*$/) && pprevToken.type == T_KEY) ||
+          (pprevToken.token.match(/function\s*$/) &&
+            pprevToken.type == T_KEY) ||
           scopeTree[scopeTree.length - 1] == "class";
         addToken(T_OTHER);
         i++;
@@ -259,11 +264,11 @@
         scope = "(";
         // makes name of function colored to method
         if (prevt == T_NAME || prevt == T_OBJECTPROP || prevt == T_ARGUMENT) {
-					if (isObjectProprty(pprevToken.token, tokens[tokens.length - 4])) {
-						prevToken.type = T_METHODASOBJPROP;
+          if (isObjectProprty(pprevToken.token, tokens[tokens.length - 4])) {
+            prevToken.type = T_METHODASOBJPROP;
           } else {
-						prevToken.type += " " +T_METHOD;
-					}
+            prevToken.type += " " + T_METHOD;
+          }
         }
         if (isFunctionClause) {
           // reads arguments

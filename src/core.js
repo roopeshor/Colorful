@@ -67,15 +67,15 @@ parsing speed: ${speed} KiB/s`,
         const tkn = tokens[i];
         const tokenTypes = tkn.type.split(" ");
         const token = tkn.token.replace(/&/g, "&amp;").replace(/</g, "&lt;");
-				if (/OTHER/.test(tokenTypes[0])) formatted += token;
-				else {
-					let classes = "";
-					for (let tok of tokenTypes) {
-						classes += this.tokenClasses[tok] + " ";
-					}
-					console.log(classes);
-					formatted += `<span class="token ${classes.trim()}">${token}</span>`;
-				}
+        if (/OTHER/.test(tokenTypes[0])) formatted += token;
+        else {
+          let classes = "";
+          for (let tok of tokenTypes) {
+            classes += this.tokenClasses[tok] + " ";
+          }
+          console.log(classes);
+          formatted += `<span class="token ${classes.trim()}">${token}</span>`;
+        }
       }
       return formatted;
     },

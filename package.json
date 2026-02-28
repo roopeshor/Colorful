@@ -4,7 +4,7 @@
   "description": "HTML & JS syntax highlighter",
   "scripts": {
     "fmt": "prettier . --write",
-    "build": "npx grunt"
+    "build": "npx gulp"
   },
   "repository": {
     "type": "git",
@@ -17,9 +17,9 @@
   },
   "homepage": "https://github.com/Roopesh2/Colorful#readme",
   "devDependencies": {
-    "grunt": "^1.6.1",
-    "grunt-browserify": "^6.0.0",
-    "grunt-contrib-uglify": "^5.2.2",
+    "gulp": "^5.0.1",
+    "gulp-rename": "^2.1.0",
+    "gulp-uglify": "^3.0.2",
     "prettier": "^3.0.2"
   }
 }
