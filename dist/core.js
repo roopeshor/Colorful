@@ -52,8 +52,8 @@
         `Language: ${lang}
 total code analysed: ${(text.length / 1024).toFixed(3)} KiB
 found: ${out.tokens.length} tokens
-compile time: ${time.toFixed(4)} ms
-compile speed: ${speed} KiB/s`,
+parsing time: ${time.toFixed(4)} ms
+parsing speed: ${speed} KiB/s`,
       );
     },
 
@@ -66,13 +66,17 @@ compile speed: ${speed} KiB/s`,
       let formatted = "";
       for (let i = 0; i < tokens.length; i++) {
         const tkn = tokens[i];
-        const tokenType = tkn.type;
+        const tokenTypes = tkn.type.split(" ");
         const token = tkn.token.replace(/&/g, "&amp;").replace(/</g, "&lt;");
-        if (tokenType != "OTHER") {
-          formatted += `<span class="token ${this.tokenClasses[tokenType]}">${token}</span>`;
-        } else {
-          formatted += token;
-        }
+				if (/OTHER/.test(tokenTypes[0])) formatted += token;
+				else {
+					let classes = "";
+					for (let tok of tokenTypes) {
+						classes += this.tokenClasses[tok] + " ";
+					}
+					console.log(classes);
+					formatted += `<span class="token ${classes.trim()}">${token}</span>`;
+				}
       }
       return formatted;
     },
